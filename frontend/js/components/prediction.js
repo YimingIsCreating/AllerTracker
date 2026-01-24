@@ -156,8 +156,6 @@ const PredictionComponent = {
 
     `;
     
-    if (graphData.has_data) {
-        this.renderGraph(graphData);
-    }
+
     }
 };
