@@ -6,6 +6,7 @@ import datetime  # Import datetime module for handling date and time
 import json  # Import json module for saving/loading data
 from allergenanalyzer import AllergenAnalyzer  # Import AllergenAnalyzer class
 
+
 class FoodTracker():
 
     def __init__(self):
@@ -378,6 +379,7 @@ Enter 3 to search by food name''')  # Print menu options
             "known_allergens": list(self.known_allergens),  # Convert set to list for JSON
             "next_id": self.next_id  # Include next ID counter
         }
+        data_path = os.path.join(os.path.dirname(__file__), "diet_data.json")
         try:
             with open("diet_data.json", "w", encoding="utf-8") as f:  # Open file for writing
                 json.dump(data, f, indent=2, ensure_ascii=False)  # Write data as formatted JSON
@@ -393,6 +395,7 @@ Enter 3 to search by food name''')  # Print menu options
         """
         Load data from JSON file with status messages
         """
+        data_path = os.path.join(os.path.dirname(__file__), "diet_data.json")
         try:
             with open("diet_data.json", "r", encoding="utf-8") as f:  # Open file for reading
                 data = json.load(f)  # Parse JSON data
@@ -412,6 +415,7 @@ Enter 3 to search by food name''')  # Print menu options
         Load data from JSON file silently (for unit tests)
         No error messages printed
         """
+        data_path = os.path.join(os.path.dirname(__file__), "diet_data.json")
         try:
             with open("diet_data.json", "r", encoding="utf-8") as f:  # Open file for reading
                 data = json.load(f)  # Parse JSON data
