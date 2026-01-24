@@ -5,6 +5,7 @@
 import datetime  # Import datetime module for handling date and time
 import json  # Import json module for saving/loading data
 from allergenanalyzer import AllergenAnalyzer  # Import AllergenAnalyzer class
+import os 
 
 
 class FoodTracker():
