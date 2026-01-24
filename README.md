@@ -12,6 +12,18 @@ Track what you eat and any symptoms you get. The app analyzes the data and shows
 ![Home Dashboard](screenshots/home.png)
 *Track your meals, view activity heatmap, and see your highest risk foods at a glance*
 
+### Allergen Relationship Network
+![Network Graph](screenshots/network.png)
+*Visual map showing which foods appear together with symptoms*
+
+### Smart Meal Input
+![Smart Input](screenshots/smart-input.png)
+*Just type what you ate - AI extracts the ingredients automatically*
+
+### AI Chat Assistant
+![AI Assistant](screenshots/chat.png)
+*Ask questions about your data in plain language*
+
 ### Meal Records
 ![Meal Records](screenshots/records.png)
 *All your meal history with filters for date, food, and symptoms*
@@ -24,17 +36,6 @@ Track what you eat and any symptoms you get. The app analyzes the data and shows
 ![Report](screenshots/report.png)
 *Timeline of recent high-risk meals and detailed breakdown of potential allergens*
 
-### Smart Meal Input
-![Smart Input](screenshots/smart-input.png)
-*Just type what you ate - AI extracts the ingredients automatically*
-
-### AI Chat Assistant
-![AI Assistant](screenshots/chat.png)
-*Ask questions about your data in plain language*
-
-### Allergen Relationship Network
-![Network Graph](screenshots/network.png)
-*Visual map showing which foods appear together with symptoms*
 
 ## Key features
 
