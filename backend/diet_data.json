@@ -1,0 +1,777 @@
+{
+  "records": [
+    {
+      "id": 1,
+      "date": "2025-01-20",
+      "meal_time": "08:30",
+      "foods": [
+        "oatmeal",
+        "banana",
+        "almond milk"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 2,
+      "date": "2025-01-20",
+      "meal_time": "12:45",
+      "foods": [
+        "chicken salad",
+        "avocado",
+        "tomatoes"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 3,
+      "date": "2025-01-21",
+      "meal_time": "19:00",
+      "foods": [
+        "salmon",
+        "broccoli",
+        "rice"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 4,
+      "date": "2025-01-25",
+      "meal_time": "08:00",
+      "foods": [
+        "eggs",
+        "toast",
+        "orange juice"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 5,
+      "date": "2025-01-28",
+      "meal_time": "13:00",
+      "foods": [
+        "pasta",
+        "tomato sauce",
+        "parmesan"
+      ],
+      "symptoms": [
+        "mild headache"
+      ]
+    },
+    {
+      "id": 6,
+      "date": "2025-02-03",
+      "meal_time": "18:30",
+      "foods": [
+        "shrimp",
+        "fried rice",
+        "soy sauce"
+      ],
+      "symptoms": [
+        "rash",
+        "itchy"
+      ]
+    },
+    {
+      "id": 7,
+      "date": "2025-02-10",
+      "meal_time": "09:00",
+      "foods": [
+        "greek yogurt",
+        "honey",
+        "berries"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 8,
+      "date": "2025-02-14",
+      "meal_time": "12:30",
+      "foods": [
+        "beef burger",
+        "fries",
+        "coke"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 9,
+      "date": "2025-02-18",
+      "meal_time": "19:15",
+      "foods": [
+        "shrimp",
+        "pasta",
+        "garlic"
+      ],
+      "symptoms": [
+        "rash",
+        "nausea"
+      ]
+    },
+    {
+      "id": 10,
+      "date": "2025-02-25",
+      "meal_time": "08:15",
+      "foods": [
+        "smoothie",
+        "spinach",
+        "protein powder"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 11,
+      "date": "2025-03-05",
+      "meal_time": "13:00",
+      "foods": [
+        "sushi",
+        "wasabi",
+        "soy sauce"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 12,
+      "date": "2025-03-12",
+      "meal_time": "18:00",
+      "foods": [
+        "chicken",
+        "vegetables",
+        "quinoa"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 13,
+      "date": "2025-03-17",
+      "meal_time": "08:45",
+      "foods": [
+        "pancakes",
+        "maple syrup",
+        "strawberries"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 14,
+      "date": "2025-03-22",
+      "meal_time": "12:00",
+      "foods": [
+        "caesar salad",
+        "croutons",
+        "dressing"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 15,
+      "date": "2025-03-28",
+      "meal_time": "19:30",
+      "foods": [
+        "shrimp",
+        "noodles",
+        "peanuts"
+      ],
+      "symptoms": [
+        "severe rash",
+        "itchy",
+        "swelling"
+      ]
+    },
+    {
+      "id": 16,
+      "date": "2025-04-05",
+      "meal_time": "09:00",
+      "foods": [
+        "toast",
+        "avocado",
+        "eggs"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 17,
+      "date": "2025-04-12",
+      "meal_time": "13:30",
+      "foods": [
+        "pizza",
+        "mozzarella",
+        "basil"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 18,
+      "date": "2025-04-18",
+      "meal_time": "18:00",
+      "foods": [
+        "steak",
+        "potatoes",
+        "asparagus"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 19,
+      "date": "2025-04-25",
+      "meal_time": "08:30",
+      "foods": [
+        "cereal",
+        "milk",
+        "banana"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 20,
+      "date": "2025-05-02",
+      "meal_time": "12:15",
+      "foods": [
+        "burrito",
+        "beans",
+        "cheese"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 21,
+      "date": "2025-05-10",
+      "meal_time": "19:00",
+      "foods": [
+        "peanuts",
+        "almonds",
+        "cashews"
+      ],
+      "symptoms": [
+        "mild rash",
+        "itchy throat"
+      ]
+    },
+    {
+      "id": 22,
+      "date": "2025-05-18",
+      "meal_time": "09:15",
+      "foods": [
+        "bagel",
+        "cream cheese",
+        "lox"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 23,
+      "date": "2025-05-25",
+      "meal_time": "13:00",
+      "foods": [
+        "ramen",
+        "egg",
+        "seaweed"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 24,
+      "date": "2025-06-03",
+      "meal_time": "18:45",
+      "foods": [
+        "lamb",
+        "couscous",
+        "vegetables"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 25,
+      "date": "2025-06-12",
+      "meal_time": "08:00",
+      "foods": [
+        "waffles",
+        "syrup",
+        "whipped cream"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 26,
+      "date": "2025-06-20",
+      "meal_time": "12:30",
+      "foods": [
+        "pho",
+        "beef",
+        "noodles"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 27,
+      "date": "2025-06-28",
+      "meal_time": "19:00",
+      "foods": [
+        "shrimp",
+        "lobster",
+        "butter"
+      ],
+      "symptoms": [
+        "severe rash",
+        "nausea",
+        "dizziness"
+      ]
+    },
+    {
+      "id": 28,
+      "date": "2025-07-05",
+      "meal_time": "09:00",
+      "foods": [
+        "omelette",
+        "mushrooms",
+        "cheese"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 29,
+      "date": "2025-07-15",
+      "meal_time": "13:00",
+      "foods": [
+        "sandwich",
+        "turkey",
+        "lettuce"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 30,
+      "date": "2025-07-22",
+      "meal_time": "18:00",
+      "foods": [
+        "peanuts",
+        "chocolate",
+        "caramel"
+      ],
+      "symptoms": [
+        "rash",
+        "itchy"
+      ]
+    },
+    {
+      "id": 31,
+      "date": "2025-08-02",
+      "meal_time": "08:30",
+      "foods": [
+        "granola",
+        "yogurt",
+        "honey"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 32,
+      "date": "2025-08-10",
+      "meal_time": "12:00",
+      "foods": [
+        "tacos",
+        "beef",
+        "salsa"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 33,
+      "date": "2025-08-18",
+      "meal_time": "19:30",
+      "foods": [
+        "shrimp",
+        "scallops",
+        "wine"
+      ],
+      "symptoms": [
+        "rash",
+        "swelling",
+        "difficulty breathing"
+      ]
+    },
+    {
+      "id": 34,
+      "date": "2025-08-25",
+      "meal_time": "09:00",
+      "foods": [
+        "french toast",
+        "berries",
+        "cream"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 35,
+      "date": "2025-09-05",
+      "meal_time": "13:30",
+      "foods": [
+        "pad thai",
+        "peanuts",
+        "lime"
+      ],
+      "symptoms": [
+        "mild rash",
+        "itchy"
+      ]
+    },
+    {
+      "id": 36,
+      "date": "2025-09-12",
+      "meal_time": "18:00",
+      "foods": [
+        "roast chicken",
+        "carrots",
+        "gravy"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 37,
+      "date": "2025-09-20",
+      "meal_time": "08:15",
+      "foods": [
+        "breakfast burrito",
+        "eggs",
+        "cheese"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 38,
+      "date": "2025-09-28",
+      "meal_time": "12:45",
+      "foods": [
+        "lasagna",
+        "ground beef",
+        "ricotta"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 39,
+      "date": "2025-10-05",
+      "meal_time": "19:00",
+      "foods": [
+        "sushi",
+        "shrimp",
+        "eel"
+      ],
+      "symptoms": [
+        "severe rash",
+        "nausea"
+      ]
+    },
+    {
+      "id": 40,
+      "date": "2025-10-12",
+      "meal_time": "09:30",
+      "foods": [
+        "acai bowl",
+        "granola",
+        "coconut"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 41,
+      "date": "2025-10-20",
+      "meal_time": "13:00",
+      "foods": [
+        "club sandwich",
+        "bacon",
+        "mayo"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 42,
+      "date": "2025-10-28",
+      "meal_time": "18:30",
+      "foods": [
+        "pork chop",
+        "apples",
+        "sage"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 43,
+      "date": "2025-11-05",
+      "meal_time": "08:00",
+      "foods": [
+        "croissant",
+        "jam",
+        "butter"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 44,
+      "date": "2025-11-12",
+      "meal_time": "12:30",
+      "foods": [
+        "minestrone soup",
+        "bread",
+        "parmesan"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 45,
+      "date": "2025-11-18",
+      "meal_time": "19:00",
+      "foods": [
+        "turkey",
+        "stuffing",
+        "cranberry sauce"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 46,
+      "date": "2025-11-25",
+      "meal_time": "09:00",
+      "foods": [
+        "eggs benedict",
+        "hollandaise",
+        "ham"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 47,
+      "date": "2025-12-02",
+      "meal_time": "13:00",
+      "foods": [
+        "pho",
+        "shrimp",
+        "basil"
+      ],
+      "symptoms": [
+        "rash",
+        "itchy throat"
+      ]
+    },
+    {
+      "id": 48,
+      "date": "2025-12-08",
+      "meal_time": "18:00",
+      "foods": [
+        "meatloaf",
+        "mashed potatoes",
+        "peas"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 49,
+      "date": "2025-12-15",
+      "meal_time": "08:30",
+      "foods": [
+        "protein shake",
+        "banana",
+        "peanut butter"
+      ],
+      "symptoms": [
+        "mild rash"
+      ]
+    },
+    {
+      "id": 50,
+      "date": "2025-12-20",
+      "meal_time": "12:00",
+      "foods": [
+        "chicken wings",
+        "celery",
+        "blue cheese"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 51,
+      "date": "2025-12-28",
+      "meal_time": "19:30",
+      "foods": [
+        "prime rib",
+        "yorkshire pudding",
+        "horseradish"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 52,
+      "date": "2026-01-02",
+      "meal_time": "09:00",
+      "foods": [
+        "bagel",
+        "lox",
+        "capers"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 53,
+      "date": "2026-01-05",
+      "meal_time": "13:00",
+      "foods": [
+        "pasta carbonara",
+        "bacon",
+        "egg"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 54,
+      "date": "2026-01-08",
+      "meal_time": "18:00",
+      "foods": [
+        "shrimp",
+        "garlic butter",
+        "rice"
+      ],
+      "symptoms": [
+        "severe rash",
+        "swelling",
+        "nausea"
+      ]
+    },
+    {
+      "id": 55,
+      "date": "2026-01-10",
+      "meal_time": "08:30",
+      "foods": [
+        "overnight oats",
+        "chia seeds",
+        "berries"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 56,
+      "date": "2026-01-12",
+      "meal_time": "12:15",
+      "foods": [
+        "chicken caesar wrap",
+        "romaine",
+        "parmesan"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 57,
+      "date": "2026-01-14",
+      "meal_time": "19:00",
+      "foods": [
+        "beef stir fry",
+        "vegetables",
+        "soy sauce"
+      ],
+      "symptoms": [
+        "rash"
+      ]
+    },
+    {
+      "id": 58,
+      "date": "2026-01-16",
+      "meal_time": "09:00",
+      "foods": [
+        "smoothie bowl",
+        "mango",
+        "granola"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 59,
+      "date": "2026-01-17",
+      "meal_time": "13:30",
+      "foods": [
+        "thai curry",
+        "coconut milk",
+        "peanuts"
+      ],
+      "symptoms": [
+        "rash",
+        "itchy"
+      ]
+    },
+    {
+      "id": 60,
+      "date": "2026-01-18",
+      "meal_time": "18:30",
+      "foods": [
+        "grilled salmon",
+        "asparagus",
+        "lemon"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 61,
+      "date": "2026-01-19",
+      "meal_time": "20:01",
+      "foods": [
+        "chicken"
+      ],
+      "symptoms": []
+    },
+    {
+      "id": 62,
+      "date": "2026-01-19",
+      "meal_time": "23:12",
+      "foods": [
+        "sesame seed bun",
+        "beef patty",
+        "Big Mac sauce",
+        "lettuce",
+        "processed cheese",
+        "pickles",
+        "onions"
+      ],
+      "symptoms": [
+        "rash"
+      ]
+    },
+    {
+      "id": 63,
+      "date": "2026-01-19",
+      "meal_time": "23:19",
+      "foods": [
+        "beef",
+        "rice",
+        "onions",
+        "soy sauce",
+        "mushroom",
+        "sauce"
+      ],
+      "symptoms": [
+        "rash"
+      ]
+    },
+    {
+      "id": 64,
+      "date": "2026-01-19",
+      "meal_time": "23:20",
+      "foods": [
+        "beef",
+        "wheat bread",
+        "lettuce",
+        "cheese",
+        "pickles",
+        "onions",
+        "sauce",
+        "potatoes",
+        "cooking oil",
+        "salt"
+      ],
+      "symptoms": [
+        "rash"
+      ]
+    }
+  ],
+  "known_allergens": [
+    "peanuts",
+    "shrimp"
+  ],
+  "next_id": 65
+}

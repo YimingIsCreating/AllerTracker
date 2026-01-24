@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AllerTracker</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="heatmap-tooltip" id="heatmapTooltip"></div>
+    
+    <!-- Alert Modal -->
+    <div class="modal-overlay" id="alertModal">
+        <div class="modal">
+            <div class="modal-header"><div class="modal-title" id="alertTitle"></div></div>
+            <div class="modal-body" id="alertBody"></div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeAlert()">Cancel</button>
+                <button class="modal-btn primary" id="alertConfirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Meal Modal -->
+    <div class="modal-overlay" id="addMealModal">
+        <div class="modal large">
+            <div class="modal-header"><div class="modal-title">🍽️ Add New Meal</div></div>
+            <div class="modal-body">
+                <div class="input-method-tabs">
+                    <button class="method-tab active" onclick="switchInputMethod('smart')">🤖 Smart Input</button>
+                    <button class="method-tab" onclick="switchInputMethod('manual')">⌨️ Manual Input</button>
+                </div>
+                <div id="smart-input-mode">
+                    <div class="form-group">
+                        <label class="form-label">Tell me what you ate</label>
+                        <textarea class="form-input" id="smartMealInput" rows="4" placeholder="e.g., I had a beef bowl at Yoshinoya"></textarea>
+                        <button class="analyze-btn" onclick="analyzeMeal()">✨ Analyze with AI</button>
+                        <div class="form-hint">💡 Type naturally - AI will identify ingredients for you</div>
+                    </div>
+                    <div id="ai-analysis-result" style="display: none;"></div>
+                </div>
+                <div id="manual-input-mode" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Foods eaten</label>
+                        <input type="text" class="form-input" id="manualMealInput" placeholder="e.g., chicken, rice, broccoli">
+                        <div class="form-hint">💡 Separate with commas</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeAddMealModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="submitMeal()">Add Meal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Symptoms Modal -->
+    <div class="modal-overlay" id="addSymptomsModal">
+        <div class="modal">
+            <div class="modal-header"><div class="modal-title">🤧 Add Symptoms</div></div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Record ID</label>
+                    <input type="number" class="form-input" id="symptomsRecordIdInput" placeholder="Enter record ID">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Symptoms</label>
+                    <input type="text" class="form-input" id="symptomsInput" placeholder="e.g., rash, itchy">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeAddSymptomsModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="submitSymptoms()">Add Symptoms</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo-container">
+                <div class="logo">
+                    <div class="logo-icon">🍽️</div>
+                    AllerTracker
+                </div>
+            </div>
+            <div class="nav-container">
+                <div class="nav-item active" onclick="showPage('home')"><span>🏠</span>Home</div>
+                <div class="nav-item" id="recordsParent" onclick="showPage('records')"><span>📋</span>Records</div>
+                <div class="nav-sub-item" onclick="showRecordsSubPage('mealRecords')">Meal Records</div>
+                <div class="nav-sub-item" onclick="showRecordsSubPage('knownAllergens')">Known Allergens</div>
+                <div class="nav-item" id="analysisParent" onclick="showPage('analysis')"><span>📊</span>Analysis</div>
+                <div class="nav-sub-item" onclick="showSubPage('foodConfidence')">Food Confidence</div>
+                <div class="nav-sub-item" onclick="showSubPage('report')">Report</div>
+                <div class="nav-sub-item" onclick="showSubPage('aiAssistant')">AI Assistant</div>
+                <div class="nav-sub-item" onclick="showSubPage('predict')">Predict</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Home Page -->
+            <div id="homePage">
+                <div class="content-header">
+                    <div class="header-actions">
+                        <button class="action-btn" onclick="openAddMealModal()"><span>➕</span>Add Meal</button>
+                        <button class="action-btn" onclick="openAddSymptomsModal()"><span>🤧</span>Add Symptoms</button>
+                        <button class="action-btn primary" onclick="generateReport()"><span>📊</span>Generate Report</button>
+                    </div>
+                </div>
+                <div class="content-body">
+                    <div class="stats-grid" id="statsGrid"></div>
+                    <div class="section-card">
+                        <div class="section-title">Activity Heatmap</div>
+                        <div class="color-legend">
+                            <span style="margin-right: 8px; font-weight: 600;">Less</span>
+                            <div class="legend-box" style="background: #ebedf0;"></div>
+                            <div class="legend-box" style="background: #438D76;"></div>
+                            <div class="legend-box" style="background: #629959;"></div>
+                            <div class="legend-box" style="background: #B3C764;"></div>
+                            <div class="legend-box" style="background: #EAE7A4;"></div>
+                            <div class="legend-box" style="background: #FBDC81;"></div>
+                            <div class="legend-box" style="background: #EFA346;"></div>
+                            <div class="legend-box" style="background: #D22334;"></div>
+                            <span style="margin-left: 4px; font-weight: 600;">More</span>
+                        </div>
+                        <div class="heatmap-container">
+                            <div class="heatmap-months" id="heatmapMonths"></div>
+                            <div class="heatmap-grid-wrapper">
+                                <div class="heatmap-weekdays">
+                                    <div class="heatmap-weekday">Sun</div>
+                                    <div class="heatmap-weekday">Mon</div>
+                                    <div class="heatmap-weekday">Tue</div>
+                                    <div class="heatmap-weekday">Wed</div>
+                                    <div class="heatmap-weekday">Thu</div>
+                                    <div class="heatmap-weekday">Fri</div>
+                                    <div class="heatmap-weekday">Sat</div>
+                                </div>
+                                <div class="heatmap-grid" id="heatmapGrid"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-title">
+                            <span>🔥 High Risk Foods</span>
+                            <a class="link-btn" onclick="goToFoodConfidence()">All Foods</a>
+                        </div>
+                        <div class="risk-foods-list" id="topRiskFoods"></div>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-title">
+                            <span>🔮 Allergen Relationship Network</span>
+                            <a class="link-btn" onclick="Navigation.showSubPage('predict', false)">Full Analysis</a>
+                        </div>
+                        <div id="homePredictionPreview"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Records Page -->
+            <div id="recordsPage" style="display: none;">
+                <div class="content-body" style="padding-top: 40px;">
+                    
+                    <!-- Meal Records Sub-page -->
+                    <div id="mealRecordsContent" style="display: none;">
+                        <div class="filters-bar">
+                            <div class="filter-group">
+                                <label class="filter-label">Date</label>
+                                <input type="date" class="filter-input" id="filterDate">
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Food Name</label>
+                                <input type="text" class="filter-input" id="filterFood" placeholder="Search..." oninput="filterRecords()">
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Symptoms</label>
+                                <input type="text" class="filter-input" id="filterSymptom" placeholder="Search..." oninput="filterRecords()">
+                            </div>
+                        </div>
+                        <div class="records-table">
+                            <div class="records-table-header">
+                                <div>ID</div>
+                                <div>Date & Time</div>
+                                <div>Foods</div>
+                                <div>Symptoms</div>
+                                <div>Actions</div>
+                            </div>
+                            <div class="records-table-body" id="recordsTableBody"></div>
+                        </div>
+                    </div>
+
+                    <!-- Known Allergens Sub-page -->
+                    <div id="knownAllergensContent" style="display: none;">
+                        <div class="content-header" style="padding: 0 0 20px 0;">
+                            <div class="header-actions">
+                                <button class="action-btn primary" onclick="Modal.openAddKnownAllergen()"><span>➕</span>Add Known Allergen</button>
+                            </div>
+                        </div>
+                        <div class="compact-banner">
+                            💡 Medically Confirmed Allergens - must be strictly avoided
+                        </div>
+                            <!-- <div class="allergen-banner-icon">💡</div> -->
+                            <!-- <div class="allergen-banner-content">
+                                <div class="allergen-banner-title">Medically Confirmed Allergens</div>
+                                <div class="allergen-banner-desc">Allergens confirmed through medical testing - must be strictly avoided</div>
+                            </div> -->
+                        <!-- </div> -->
+                        <div class="records-table">
+                            <div class="records-table-header">
+                                <div>Allergen Name</div>
+                                <div>Status</div>
+                                <div>Actions</div>
+                            </div>
+                            <div class="records-table-body" id="knownAllergensTableBody"></div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- Analysis Page -->
+            <div id="analysisPage" style="display: none;">
+                <div class="content-body" style="padding-top: 40px;">
+                    
+                    <!-- Food Confidence Sub-page -->
+                    <div id="foodConfidenceContent" style="display: none;">
+                        <div class="compact-banner">
+                            💡 Confidence scores are based on your meal records and symptom correlations - NOT medical diagnoses. Please consult a healthcare professional.
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 16px; align-items: center;">
+                            <button class="sort-btn active" id="sortDescBtn" onclick="sortFoods('desc')">High to Low</button>
+                            <button class="sort-btn" id="sortAscBtn" onclick="sortFoods('asc')">Low to High</button>
+                        </div>
+                        <div class="records-table">
+                            <div class="foods-table-header">
+                                <div>Rank</div>
+                                <div>Food</div>
+                                <div>Confidence Score</div>
+                                <div>Risk Level</div>
+                            </div>
+                            <div id="foodsTableBody"></div>
+                        </div>
+                        <div id="loadMoreFoods" style="display: none; text-align: center; padding: 20px;">
+                            <button class="action-btn" onclick="loadMoreFoodItems()">
+                                <span>⬇️</span>Load More
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Report Sub-page -->
+                    <div id="reportContent" style="display: none;">
+                        <div class="compact-banner">
+                            ⚕️ This report is for reference only and should NOT be used as a medical diagnosis. Please consult a qualified allergist or healthcare provider.
+                        </div>
+                        
+                        <div class="section-card">
+                            <div class="section-title">⚠️ Recent High-Risk Food Timeline (Last 2 Weeks)</div>
+                            <div id="recentHighRiskFoods"></div>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">🔴 High Confidence Allergens</div>
+                            <div id="highConfidenceFoods"></div>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">🏥 Recommended Medical Tests</div>
+                            <div id="testRecommendations"></div>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">✅ Confirmed Allergens</div>
+                            <div id="confirmedAllergens"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Assistant Sub-page -->
+                    <div id="aiAssistantContent" style="display: none;"></div>
+                        <!-- 这里会被 JS 动态填充,不需要任何静态内容 -->
+                    </div>
+                    
+                    <!-- Predict Sub-page -->
+                    <div id="predictContent" style="display: none;">
+                        <!-- Banner 会由 JS 动态生成 -->
+                    </div>
+
+
+                    
+                </div>
+            </div>
+
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/components/modal.js"></script>
+    <script src="js/components/heatmap.js"></script>
+    <script src="js/components/chat.js"></script>
+    <script src="js/components/prediction.js"></script>
+    <script src="js/pages/home.js"></script>
+    <script src="js/pages/records.js"></script>
+    <script src="js/pages/analysis.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
