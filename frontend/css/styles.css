@@ -67,13 +67,18 @@
         .nav-sub-item:hover { color: var(--color-text-primary); }
         .nav-sub-item.active { color: var(--color-brand); font-weight: 600; }
         .main-content { flex: 1; overflow-y: auto; background: var(--color-page-bg); }
-        .content-header { padding: var(--space-5) var(--space-9); display: flex; justify-content: flex-end; }
+        /* content-header 现在统一嵌套在 content-body.no-header 内部,顶部/左右间距全部由外层负责,
+           这里只留一个到下方内容的间隙,避免每个页面各自叠加一份 padding 导致顶部间距对不齐 */
+        .content-header { padding: 0 0 var(--space-5) 0; display: flex; justify-content: flex-end; }
         .header-actions { display: flex; gap: 12px; }
         .action-btn { padding: 10px 20px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-xs); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
         .action-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(27,31,36,0.1); }
         .action-btn.primary { background: linear-gradient(135deg, var(--color-success-dark), var(--color-success)); color: white; border: none; }
         .content-body { padding: 0 var(--space-9) var(--space-9); }
         .content-body.no-header { padding-top: var(--space-9); }
+        /* 页面内第二个 section-title(比如 Known Allergens 页面里的 "Excluded Foods"),
+           需要比默认更大的上间距、更小的下间距,统一用这个修饰类,不再各页面各写一份内联样式 */
+        .section-title--spaced { margin-top: var(--space-8); margin-bottom: var(--space-1); }
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
         .stat-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4) var(--space-5); display: flex; justify-content: space-between; align-items: center; }
         .stat-label { font-size: var(--font-2xs); font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; }
@@ -986,14 +991,16 @@
 
 .chat-input {
     flex: 1;
-    padding: 12px 16px;
+    padding: 14px 16px;
     border: 2px solid var(--color-border);
     border-radius: 8px;
     font-size: var(--font-sm);
     font-family: inherit;
+    line-height: 1.5;
     resize: none;
-    min-height: 44px;
-    max-height: 120px;
+    min-height: 52px;
+    max-height: 200px;
+    overflow-y: auto;
     transition: all 0.2s;
 }
 
@@ -1005,6 +1012,7 @@
 
 .chat-send-btn {
     padding: 12px 24px;
+    min-height: 52px;
     background: linear-gradient(135deg, var(--color-link), var(--color-link-hover));
     color: white;
     border: none;
@@ -1765,7 +1773,11 @@
     .sidebar {
         width: 280px;
     }
-    
+
+    #aiAssistantContent {
+        left: 280px; /* 侧边栏在这个断点下变宽了,固定定位的聊天面板要跟着调整,不然会跟侧边栏错位 */
+    }
+
     .content-body {
         padding: 0 60px 60px;
         max-width: 1400px;
@@ -1841,12 +1853,3 @@
 
 
 
-/* #predictContent {
-    margin-top: -40px !important;
-} */
-
-#predictContent {
-    padding-top: 0 !important;
-    padding-left: 40px !important;
-    padding-right: 40px !important;
-}

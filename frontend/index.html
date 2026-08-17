@@ -108,14 +108,14 @@
         <div class="main-content">
             <!-- Home Page -->
             <div id="homePage">
-                <div class="content-header">
-                    <div class="header-actions">
-                        <button class="action-btn" onclick="openAddMealModal()"><span>➕</span>Add Meal</button>
-                        <button class="action-btn" onclick="openAddSymptomsModal()"><span>🤧</span>Add Symptoms</button>
-                        <button class="action-btn primary" onclick="generateReport()"><span>📊</span>Generate Report</button>
+                <div class="content-body no-header">
+                    <div class="content-header">
+                        <div class="header-actions">
+                            <button class="action-btn" onclick="openAddMealModal()"><span>➕</span>Add Meal</button>
+                            <button class="action-btn" onclick="openAddSymptomsModal()"><span>🤧</span>Add Symptoms</button>
+                            <button class="action-btn primary" onclick="generateReport()"><span>📊</span>Generate Report</button>
+                        </div>
                     </div>
-                </div>
-                <div class="content-body">
                     <div class="stats-grid" id="statsGrid"></div>
                     <div class="section-card">
                         <div class="section-title">Activity Heatmap</div>
@@ -201,7 +201,7 @@
 
                     <!-- Known Allergens Sub-page -->
                     <div id="knownAllergensContent" style="display: none;">
-                        <div class="content-header" style="padding: 0 0 20px 0;">
+                        <div class="content-header">
                             <div class="header-actions">
                                 <button class="action-btn primary" onclick="Modal.openAddKnownAllergen()"><span>➕</span>Add Known Allergen</button>
                             </div>
@@ -224,7 +224,7 @@
                             <div class="records-table-body" id="knownAllergensTableBody"></div>
                         </div>
 
-                        <div class="section-title" style="margin-top: 32px; margin-bottom: 4px;">Excluded Foods</div>
+                        <div class="section-title section-title--spaced">Excluded Foods</div>
                         <div style="font-size: var(--font-xs); color: var(--color-text-secondary); margin-bottom: 12px;">
                             Foods you've manually ruled out — they're skipped in all risk analysis until restored
                         </div>
@@ -296,7 +296,7 @@
                     </div>
                     
                     <!-- AI Assistant Sub-page -->
-                    <div id="aiAssistantContent" style="display: none;"></div>
+                    <div id="aiAssistantContent" style="display: none;">
                         <!-- 这里会被 JS 动态填充,不需要任何静态内容 -->
                     </div>
                     
@@ -309,7 +309,7 @@
                     
                 </div>
             </div>
-
+        </div>
 
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>

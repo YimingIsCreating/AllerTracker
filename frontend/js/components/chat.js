@@ -48,7 +48,7 @@ const ChatComponent = {
         const input = document.getElementById('chatInput');
         input.addEventListener('input', function() {
             this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
         });
     },
 
