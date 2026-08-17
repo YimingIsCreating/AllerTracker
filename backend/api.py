@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 import json
 import re
+import threading
 from datetime import datetime
 
 
@@ -30,6 +31,16 @@ app.add_middleware(
 # 初始化
 tracker = FoodTracker()
 analyzer = AllergenAnalyzer()
+# 保护 tracker 的读-改-写操作（next_id 分配、records 修改、写文件),避免并发请求下 id 重复或写入交叉
+data_lock = threading.Lock()
+
+
+def get_confidence_scores():
+    """基于清洗后的记录计算每种食物的置信度分数,供多个接口复用,避免重复计算。
+    用户手动排除(cleared)的食物不参与任何风险分析。"""
+    clean_records = analyzer.filter_contaminated_records(tracker.records)
+    scores = analyzer.calculate_confidence(clean_records)
+    return {food: score for food, score in scores.items() if food not in tracker.cleared_foods}
 
 # # 初始化 Google Gemini
 # try:
@@ -61,6 +72,22 @@ except Exception as e:
     import traceback
     traceback.print_exc()
 
+
+def call_gemini_json(prompt, model='gemini-2.5-flash'):
+    """调用 Gemini 生成内容,并将返回文本解析为 JSON(自动去除 ```json 代码块围栏)"""
+    response = ai_model.models.generate_content(model=model, contents=prompt)
+    response_text = response.text.strip()
+
+    response_text = re.sub(r'^```json\s*', '', response_text)
+    response_text = re.sub(r'^```\s*', '', response_text)
+    response_text = re.sub(r'\s*```$', '', response_text)
+
+    json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+    if json_match:
+        return json.loads(json_match.group())
+    return json.loads(response_text)
+
+
 # 数据模型
 class MealData(BaseModel):
     foods: list[str]
@@ -72,6 +99,12 @@ class SymptomData(BaseModel):
 class SmartMealInput(BaseModel):
     text: str
     language: str = "auto"
+
+class AllergenData(BaseModel):
+    name: str
+
+class ClearedFoodData(BaseModel):
+    name: str
 
 # 基础路由
 # @app.get("/")
@@ -87,33 +120,36 @@ def get_records():
 def add_meal(meal: MealData):
     """添加新的meal记录"""
     import datetime
-    
+
     meal_time = datetime.datetime.now()
-    new_record = {
-        "id": tracker.next_id,
-        "date": meal_time.strftime("%Y-%m-%d"),
-        "meal_time": meal_time.strftime("%H:%M"),
-        "foods": meal.foods,
-        "symptoms": []
-    }
-    
-    tracker.records.append(new_record)
-    tracker.next_id += 1
-    tracker.save_data()
-    
+
+    with data_lock:
+        new_record = {
+            "id": tracker.next_id,
+            "date": meal_time.strftime("%Y-%m-%d"),
+            "meal_time": meal_time.strftime("%H:%M"),
+            "foods": meal.foods,
+            "symptoms": []
+        }
+
+        tracker.records.append(new_record)
+        tracker.next_id += 1
+        tracker.save_data()
+
     return {"message": "Meal added!", "record": new_record}
 
 @app.post("/api/symptoms")
 def add_symptoms(data: SymptomData):
     """给指定记录添加症状"""
-    record = tracker.find_record_by_id(data.record_id)
-    
-    if not record:
-        raise HTTPException(status_code=404, detail="Record not found")
-    
-    record["symptoms"] = data.symptoms
-    tracker.save_data()
-    
+    with data_lock:
+        record = tracker.find_record_by_id(data.record_id)
+
+        if not record:
+            raise HTTPException(status_code=404, detail="Record not found")
+
+        record["symptoms"] = data.symptoms
+        tracker.save_data()
+
     return {"message": "Symptoms added!", "record": record}
 
 @app.get("/api/analysis")
@@ -122,16 +158,31 @@ def get_analysis():
     if not tracker.records:
         return {"total_meals": 0, "meals_with_symptoms": 0, "foods_analyzed": 0, "results": [], "known_allergens": []}
     
-    clean_records = analyzer.filter_contaminated_records(tracker.records)
-    confidence_scores = analyzer.calculate_confidence(clean_records)
+    confidence_scores = get_confidence_scores()
     records_with_symptoms = [r for r in tracker.records if r.get('symptoms')]
-    sorted_foods = sorted(confidence_scores.items(), key=lambda x: x[1], reverse=True)
-    
+    # 已确认过敏原在排序和展示上都按 100% 处理,不能让统计分数把它排到列表中间去,
+    # 跟它在界面上显示的"100% High"自相矛盾。
+    sort_key = lambda item: 1.0 if item[0] in tracker.known_allergens else item[1]
+    sorted_foods = sorted(confidence_scores.items(), key=sort_key, reverse=True)
+
     results = []
     for food, score in sorted_foods:
         if score > 0:
-            risk_level = "High" if score > 0.8 else "Medium" if score > 0.4 else "Low"
-            results.append({"food": food, "score": round(score * 100, 1), "risk_level": risk_level})
+            is_confirmed = food in tracker.known_allergens
+            # 已经手动确认过的过敏原,不管统计置信度算出来多少,都直接算 High、100%——
+            # 你已经知道答案了,不需要让算法的保守估计把它显示成不上不下的百分比。
+            #
+            # 反过来,没被确认的食物即使统计比例算出来正好是 100%(比如它每次出现都恰好
+            # 跟症状同时发生),显示上也封顶在 99%——100% 是"你亲口确认过"的专属标志,
+            # 算法自己再自信也不能达到这个数字,避免和真正确认的过敏原混淆。
+            risk_level = "High" if is_confirmed or score > 0.8 else "Medium" if score > 0.4 else "Low"
+            display_score = 100.0 if is_confirmed else min(round(score * 100, 1), 99.0)
+            results.append({
+                "food": food,
+                "score": display_score,
+                "risk_level": risk_level,
+                "confirmed": is_confirmed
+            })
     
     return {
         "total_meals": len(tracker.records),
@@ -147,11 +198,35 @@ def get_allergens():
     return {"allergens": list(tracker.known_allergens)}
 
 @app.post("/api/allergens")
-def add_allergen(allergen: dict):
+def add_allergen(allergen: AllergenData):
     """添加已知过敏原"""
-    tracker.known_allergens.add(allergen["name"])
-    tracker.save_data()
+    with data_lock:
+        tracker.known_allergens.add(allergen.name)
+        tracker.save_data()
     return {"message": "Allergen added!", "allergens": list(tracker.known_allergens)}
+
+@app.get("/api/cleared-foods")
+def get_cleared_foods():
+    """获取已排除(手动确认无关)的食物列表"""
+    return {"cleared_foods": list(tracker.cleared_foods)}
+
+@app.post("/api/cleared-foods")
+def add_cleared_food(food: ClearedFoodData):
+    """将某个食物标记为已排除,不再参与风险分析"""
+    with data_lock:
+        tracker.cleared_foods.add(food.name)
+        tracker.save_data()
+    return {"message": "Food cleared!", "cleared_foods": list(tracker.cleared_foods)}
+
+@app.delete("/api/cleared-foods/{food_name}")
+def remove_cleared_food(food_name: str):
+    """取消排除某个食物,重新让它参与风险分析"""
+    with data_lock:
+        if food_name not in tracker.cleared_foods:
+            raise HTTPException(status_code=404, detail="Food is not in the cleared list")
+        tracker.cleared_foods.discard(food_name)
+        tracker.save_data()
+    return {"message": "Food restored!", "cleared_foods": list(tracker.cleared_foods)}
 
 
 @app.post("/api/analyze-meal")
@@ -202,23 +277,8 @@ Output: {{"restaurant": null, "dishes": ["chicken teriyaki bowl"], "ingredients"
 Input: "shrimp fried rice"
 Output: {{"restaurant": null, "dishes": ["shrimp fried rice"], "ingredients": ["shrimp", "rice", "eggs", "vegetables", "soy sauce", "cooking oil"], "confidence": 80, "language_detected": "en"}}"""
 
-        response = ai_model.models.generate_content(
-            model='gemini-2.0-flash-exp',
-            contents=prompt
-        )
-        response_text = response.text.strip()
-        
-        # 清理和解析 JSON
-        response_text = re.sub(r'^```json\s*', '', response_text)
-        response_text = re.sub(r'^```\s*', '', response_text)
-        response_text = re.sub(r'\s*```$', '', response_text)
-        
-        json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
-        if json_match:
-            response_json = json.loads(json_match.group())
-        else:
-            response_json = json.loads(response_text)
-        
+        response_json = call_gemini_json(prompt)
+
         if 'ingredients' not in response_json or not response_json['ingredients']:
             raise ValueError("No ingredients found")
         
@@ -263,23 +323,8 @@ Respond in JSON format:
 """
     
     try:
-        response = ai_model.models.generate_content(
-            model='gemini-2.0-flash-exp',
-            contents=prompt
-        )
-        response_text = response.text.strip()
-        
-        # 清理和解析 JSON
-        response_text = re.sub(r'^```json\s*', '', response_text)
-        response_text = re.sub(r'^```\s*', '', response_text)
-        response_text = re.sub(r'\s*```$', '', response_text)
-        
-        json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
-        if json_match:
-            response_json = json.loads(json_match.group())
-        else:
-            response_json = json.loads(response_text)
-        
+        response_json = call_gemini_json(prompt)
+
         # 确保返回格式正确
         response_json.setdefault('reaction_type', 'Medical Testing Recommendations')
         response_json.setdefault('recommended_tests', [])
@@ -301,8 +346,7 @@ async def predict_cross_reactivity():
     
     try:
         # 获取用户的已确认过敏原和高风险食物
-        clean_records = analyzer.filter_contaminated_records(tracker.records)
-        confidence_scores = analyzer.calculate_confidence(clean_records)
+        confidence_scores = get_confidence_scores()
         
         confirmed_allergens = list(tracker.known_allergens)
         high_risk_foods = [food for food, score in confidence_scores.items() 
@@ -353,24 +397,8 @@ Severity: "high", "moderate", "low"
 Confidence: 0-100 (how likely based on medical literature)
 """
 
-        response = ai_model.models.generate_content(
-            model='gemini-2.0-flash-exp',
-            contents=prompt
-        )
-        response_text = response.text.strip()
-        
-        # 清理和解析 JSON
-        import re
-        response_text = re.sub(r'^```json\s*', '', response_text)
-        response_text = re.sub(r'^```\s*', '', response_text)
-        response_text = re.sub(r'\s*```$', '', response_text)
-        
-        json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
-        if json_match:
-            result = json.loads(json_match.group())
-        else:
-            result = json.loads(response_text)
-        
+        result = call_gemini_json(prompt)
+
         # 确保返回格式正确
         if 'predictions' not in result:
             result = {'predictions': []}
@@ -399,7 +427,7 @@ def get_prediction_graph():
         # 获取分析结果
         clean_records = analyzer.filter_contaminated_records(tracker.records)
         confidence_scores = analyzer.calculate_confidence(clean_records)
-        
+
         if not confidence_scores:
             return {
                 "nodes": [],
@@ -530,8 +558,7 @@ async def chat_with_ai(message: dict):
         chat_history.append(user_msg)
         
         # 获取用户数据
-        clean_records = analyzer.filter_contaminated_records(tracker.records)
-        confidence_scores = analyzer.calculate_confidence(clean_records)
+        confidence_scores = get_confidence_scores()
         
         # 统计信息
         total_meals = len(tracker.records)
@@ -583,10 +610,10 @@ Respond in a friendly, conversational tone."""
 
         # 调用 AI
         response = ai_model.models.generate_content(
-            model='gemini-2.0-flash-exp',
-            contents=prompt
+            model='gemini-2.5-flash',
+            contents=context
         )
-        ai_response = response.text.strip()  # ← 添加这行!
+        ai_response = response.text.strip()
 
         # 保存 AI 回复到历史
         ai_msg = {
@@ -623,14 +650,16 @@ def clear_chat_history():
 
 
 from fastapi.staticfiles import StaticFiles
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
+frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
+app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 
 @app.delete("/api/allergens/{allergen_name}")
 def delete_allergen(allergen_name: str):
     """删除已知过敏源"""
-    if allergen_name in tracker.known_allergens:
-        tracker.known_allergens.discard(allergen_name)
-        tracker.save_data()
-        return {"message": "Allergen deleted!", "allergens": list(tracker.known_allergens)}
-    else:
-        raise HTTPException(status_code=404, detail="Allergen not found")
+    with data_lock:
+        if allergen_name in tracker.known_allergens:
+            tracker.known_allergens.discard(allergen_name)
+            tracker.save_data()
+            return {"message": "Allergen deleted!", "allergens": list(tracker.known_allergens)}
+        else:
+            raise HTTPException(status_code=404, detail="Allergen not found")

@@ -10,23 +10,21 @@ const Navigation = {
     // 移除所有active状态
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     document.querySelectorAll('.nav-sub-item').forEach(i => i.classList.remove('active'));
-    
+
     // 如果是Analysis页面,显示第一个子页面
     if (page === 'analysis') {
-        this.showSubPage('foodConfidence', true);
+        this.showSubPage('foodConfidence');
         return;
     }
     // 如果是Records页面,显示第一个子页面 - 新增这段!
     if (page === 'records') {
-        this.showRecordsSubPage('mealRecords', true);
+        this.showRecordsSubPage('mealRecords');
         return;
     }
-    
+
     // 设置当前页面active
-    if (event && event.target) {
-        event.target.closest('.nav-item').classList.add('active');
-    }
-    
+    document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
+
     // 隐藏所有页面
     ['homePage', 'recordsPage', 'analysisPage'].forEach(p => 
         document.getElementById(p).style.display = 'none'
@@ -47,21 +45,18 @@ const Navigation = {
     /**
      * 显示子页面
      */
-    showSubPage(subPage, fromParent = false) {
+    showSubPage(subPage) {
         // 移除所有active状态
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
         document.querySelectorAll('.nav-sub-item').forEach(i => i.classList.remove('active'));
-        
+
         // 设置Analysis父项为active
         document.getElementById('analysisParent').classList.add('active');
-        
-        // 设置子项active
-        if (!fromParent && event && event.target) {
-        event.target.classList.add('active');
-        } else {
-            document.querySelectorAll('.nav-sub-item')[0].classList.add('active');
-        }
-        
+
+        // 按目标子页面匹配对应的侧边栏项,而不是依赖触发点击的元素
+        // (这样从首页的"Full Analysis"链接或"Generate Report"按钮跳转过来时也能正确高亮)
+        document.querySelectorAll(`.nav-sub-item[data-subpage="${subPage}"]`).forEach(i => i.classList.add('active'));
+
         // 隐藏所有主页面
         ['homePage', 'recordsPage', 'analysisPage'].forEach(p => 
             document.getElementById(p).style.display = 'none'
@@ -97,35 +92,20 @@ const Navigation = {
      */
     goToFoodConfidence() {
         State.displayedFoodsCount = 20;
-        this.showSubPage('foodConfidence', false);
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.querySelectorAll('.nav-sub-item').forEach((item, index) => {
-            item.classList.toggle('active', index === 0);
-        });
-        document.getElementById('analysisParent').classList.add('active');
+        this.showSubPage('foodConfidence');
     },
     // 新增 Records 子页面导航方法
-    showRecordsSubPage(subPage, fromParent = false) {
+    showRecordsSubPage(subPage) {
         // 移除所有 active 状态
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
         document.querySelectorAll('.nav-sub-item').forEach(i => i.classList.remove('active'));
-        
+
         // 设置 Records 父项为 active
         document.getElementById('recordsParent').classList.add('active');
-        
-        // 设置子项 active
-        if (!fromParent && event && event.target) {
-            event.target.classList.add('active');
-        } else {
-            // Records 的子菜单是第 0 和 1 项
-            const recordsSubItems = Array.from(document.querySelectorAll('.nav-sub-item')).slice(0, 2);
-            if (subPage === 'mealRecords') {
-                recordsSubItems[0].classList.add('active');
-            } else {
-                recordsSubItems[1].classList.add('active');
-            }
-        }
-        
+
+        // 按目标子页面匹配对应的侧边栏项,而不是依赖触发点击的元素
+        document.querySelectorAll(`.nav-sub-item[data-subpage="${subPage}"]`).forEach(i => i.classList.add('active'));
+
         // 隐藏所有主页面
         ['homePage', 'recordsPage', 'analysisPage'].forEach(p => 
             document.getElementById(p).style.display = 'none'

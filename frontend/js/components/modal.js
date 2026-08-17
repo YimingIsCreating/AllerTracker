@@ -49,7 +49,7 @@ const Modal = {
             const data = await AllerTrackAPI.analyzeMeal(input); 
             this.displayAIResult(data);
         } catch(e) {
-            div.innerHTML = '<div style="text-align:center;padding:20px;color:#cf222e;">❌ ' + e.message + '</div>';
+            div.innerHTML = '<div style="text-align:center;padding:20px;color:var(--color-danger);">❌ ' + e.message + '</div>';
         }
     },
 
@@ -69,7 +69,7 @@ const Modal = {
                     '<span class="ingredient-tag">' + ing + '<span class="remove-tag" onclick="Modal.removeIngredient(' + i + ')">×</span></span>'
                 ).join('')}
             </div>
-            <div style="margin-top:10px;padding-top:10px;border-top:1px solid #d0d7de;color:#57606a;font-size:11px;">
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--color-border);color:var(--color-text-secondary);font-size:var(--font-3xs);">
                 💡 AI confidence: ${res.confidence || 85}%
             </div>
         `;
@@ -111,40 +111,51 @@ const Modal = {
             foods = v.split(',').map(f => f.trim()).filter(f => f);
         }
         
+        const btn = document.getElementById('submitMealBtn');
+        btn.disabled = true;
         try {
-            const data = await AllerTrackAPI.addMeal(foods);  
+            const data = await AllerTrackAPI.addMeal(foods);
             this.closeAddMeal();
+            State.clearCache();
             Utils.showAlert('Success', 'Meal added! ID: #' + data.record.id, () => HomePage.load());
-        } catch(e) { 
-            Utils.showAlert('Error', 'Failed to add meal'); 
+        } catch(e) {
+            Utils.showAlert('Error', 'Failed to add meal');
+        } finally {
+            btn.disabled = false;
         }
     },
 
     async submitSymptoms() {
         const id = parseInt(document.getElementById('symptomsRecordIdInput').value);
         const symp = document.getElementById('symptomsInput').value;
-        
-        if (!id || !symp.trim()) { 
-            Utils.showAlert('Missing Info', 'Enter both fields'); 
-            return; 
+
+        if (!id || !symp.trim()) {
+            Utils.showAlert('Missing Info', 'Enter both fields');
+            return;
         }
-        
+
         const symptoms = symp.split(',').map(s => s.trim()).filter(s => s);
-        
+
+        const btn = document.getElementById('submitSymptomsBtn');
+        btn.disabled = true;
         try {
-            await AllerTrackAPI.addSymptoms(id, symptoms); 
+            await AllerTrackAPI.addSymptoms(id, symptoms);
             this.closeAddSymptoms();
+            State.clearCache();
             Utils.showAlert('Success', 'Symptoms added to #' + id, () => HomePage.load());
-        } catch(e) { 
-            Utils.showAlert('Error', e.message); 
+        } catch(e) {
+            Utils.showAlert('Error', e.message);
+        } finally {
+            btn.disabled = false;
         }
     },
     async openAddKnownAllergen() {
         const allergenName = prompt('Enter confirmed allergen name:');
         if (!allergenName?.trim()) return;
-        
+
         try {
             await AllerTrackAPI.addKnownAllergen(allergenName.trim());
+            State.clearCache();
             Utils.showAlert('Success', `Added allergen: ${allergenName}`, () => RecordsPage.loadKnownAllergens());
         } catch (error) {
             Utils.showAlert('Error', 'Failed to add allergen');

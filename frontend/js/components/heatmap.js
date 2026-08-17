@@ -9,7 +9,9 @@ const Heatmap = {
     generate(records, analysis) {
         const grid = document.getElementById('heatmapGrid');
         const months = document.getElementById('heatmapMonths');
-        grid.innerHTML = ''; 
+        grid.classList.remove('skeleton');
+        months.classList.remove('skeleton');
+        grid.innerHTML = '';
         months.innerHTML = '';
         
         const end = new Date();
@@ -31,15 +33,25 @@ const Heatmap = {
                 foodConfidence[f.food] = f.score / 100;
             });
         }
-        
+        const knownAllergens = new Set(analysis?.known_allergens || []);
+
         const risk = {};
         Object.keys(byDate).forEach(d => {
             const recs = byDate[d];
             const hasSym = recs.some(r => r.symptoms?.length);
-            
+
             if (!hasSym) {
                 risk[d] = recs.length ? 'very-low' : 'none';
             } else {
+                // 吃了一个你已经手动确认过的过敏原、又记录了症状 —— 这已经是实锤,不需要
+                // 靠统计置信度去"猜":这类食物你本来就很少吃(因为知道要避开),统计次数往往
+                // 攒不到 min_occurrences,容易被误判成证据不足的浅色。直接判定为最高等级。
+                const ateKnownAllergen = recs.some(r => r.foods.some(food => knownAllergens.has(food)));
+                if (ateKnownAllergen) {
+                    risk[d] = 'very-high';
+                    return;
+                }
+
                 let maxConfidence = 0;
                 recs.forEach(r => {
                     r.foods.forEach(food => {
@@ -48,39 +60,41 @@ const Heatmap = {
                         }
                     });
                 });
-                
+
                 if (maxConfidence >= 0.95) risk[d] = 'very-high';
                 else if (maxConfidence >= 0.85) risk[d] = 'high';
                 else if (maxConfidence >= 0.70) risk[d] = 'medium-high';
                 else if (maxConfidence >= 0.55) risk[d] = 'medium';
                 else if (maxConfidence >= 0.40) risk[d] = 'medium-low';
                 else if (maxConfidence >= 0.25) risk[d] = 'low';
-                else risk[d] = 'very-low';
+                else risk[d] = 'mild';  // 有症状但相关食物置信度很低——和"very-low"(完全没有症状的安全日)区分开,避免共用同一个颜色
             }
         });
         
+        let weekCount = 0;
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 7)) weekCount++;
+        const columnTemplate = `repeat(${weekCount}, minmax(6px, 1fr))`;
+        grid.style.gridTemplateColumns = columnTemplate;
+        months.style.gridTemplateColumns = columnTemplate;
+
         let curr = new Date(start);
         let mon = -1;
-        
+
         while (curr <= end) {
-            const col = document.createElement('div');
-            col.className = 'heatmap-column';
             const m = curr.getMonth();
-            
+
             if (m !== mon && curr.getDate() <= 7) {
                 mon = m;
                 const lbl = document.createElement('div');
                 lbl.className = 'heatmap-month';
-                lbl.style.width = '14px';
                 lbl.textContent = curr.toLocaleDateString('en', {month: 'short'});
                 months.appendChild(lbl);
             } else {
                 const sp = document.createElement('div');
                 sp.className = 'heatmap-month';
-                sp.style.width = '14px';
                 months.appendChild(sp);
             }
-            
+
             for (let i = 0; i < 7; i++) {
                 const day = document.createElement('div');
                 day.className = 'heatmap-day';
@@ -89,10 +103,9 @@ const Heatmap = {
                 day.setAttribute('data-date', ds);
                 day.onmouseenter = this.showTooltip;
                 day.onmouseleave = this.hideTooltip;
-                col.appendChild(day);
+                grid.appendChild(day);
                 curr.setDate(curr.getDate() + 1);
             }
-            grid.appendChild(col);
         }
     },
 

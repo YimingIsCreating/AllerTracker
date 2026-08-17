@@ -23,6 +23,9 @@ class AllerTrackAPI {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({foods})
         });
+        if (!response.ok) {
+            throw new Error(`Failed to add meal (${response.status})`);
+        }
         return response.json();
     }
 
@@ -34,7 +37,8 @@ class AllerTrackAPI {
             body: JSON.stringify({record_id: recordId, symptoms})
         });
         if (!response.ok) {
-            throw new Error(`Record #${recordId} not found`);
+            const err = await response.json().catch(() => null);
+            throw new Error(err?.detail || `Failed to add symptoms (${response.status})`);
         }
         return response.json();
     }
@@ -68,6 +72,9 @@ class AllerTrackAPI {
     // 在 AllerTrackAPI 类中添加
     static async getPredictions() {
         const response = await fetch(`${CONFIG.API_URL}/api/predict`);
+        if (!response.ok) {
+            throw new Error(`Failed to load predictions (${response.status})`);
+        }
         return response.json();
     }
 
@@ -122,6 +129,36 @@ class AllerTrackAPI {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({name: allergenName})
         });
+        return response.json();
+    }
+
+    static async getClearedFoods() {
+        const response = await fetch(`${CONFIG.API_URL}/api/cleared-foods`);
+        if (!response.ok) {
+            throw new Error(`Failed to load cleared foods (${response.status})`);
+        }
+        return response.json();
+    }
+
+    static async clearFood(foodName) {
+        const response = await fetch(`${CONFIG.API_URL}/api/cleared-foods`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name: foodName})
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to clear food (${response.status})`);
+        }
+        return response.json();
+    }
+
+    static async restoreClearedFood(foodName) {
+        const response = await fetch(`${CONFIG.API_URL}/api/cleared-foods/${encodeURIComponent(foodName)}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) {
+            throw new Error('Failed to restore food');
+        }
         return response.json();
     }
 }

@@ -25,6 +25,18 @@ const AnalysisPage = {
         this.renderFoodsTable();
     },
 
+    async clearFood(foodName) {
+        if (!confirm(`Mark "${foodName}" as not the culprit? It will be excluded from all risk analysis until you restore it from Known Allergens.`)) return;
+
+        try {
+            await AllerTrackAPI.clearFood(foodName);
+            State.clearCache();
+            await this.loadFoodConfidence();
+        } catch (e) {
+            Utils.showAlert('Error', 'Failed to exclude food');
+        }
+    },
+
     renderFoodsTable() {
         const tbody = document.getElementById('foodsTableBody');
         
@@ -48,22 +60,24 @@ const AnalysisPage = {
         
         tbody.innerHTML = displayedFoods.map((f, i) => {
             const cl = f.risk_level.toLowerCase();
-            const bg = cl === 'high' ? '#D22334,#cf222e' : cl === 'medium' ? '#EFA346,#d4731c' : '#1f883d,#1a7f37';
-            
+            const bg = cl === 'high' ? '#D22334,var(--color-danger)' : cl === 'medium' ? '#EFA346,#d4731c' : 'var(--color-success-dark),var(--color-success)';
+            const textColor = cl === 'high' ? 'var(--color-danger)' : cl === 'medium' ? 'var(--color-warning)' : 'var(--color-success)';
+
             return `
                 <div class="food-row">
                     <div><span class="record-id-badge">#${i + 1}</span></div>
-                    <div style="font-weight: 600; font-size: 13px; color: #24292f;">${f.food}</div>
+                    <div style="font-weight: 600; font-size: var(--font-sm); color: var(--color-text-primary);">${f.food}${f.confirmed ? ' <span class="confirmed-tag">✓ Confirmed</span>' : ''}</div>
                     <div>
                         <div style="display: flex; align-items: center; gap: 16px;">
-                            <div style="flex: 1; height: 10px; background: #eaeef2; border-radius: 5px; overflow: hidden;">
+                            <div style="flex: 1; height: 10px; background: var(--color-border-subtle); border-radius: 5px; overflow: hidden;">
                                 <div style="height: 100%; width: ${f.score}%; background: linear-gradient(90deg, ${bg}); border-radius: 5px;"></div>
                             </div>
-                            <span style="min-width: 60px; text-align: right; font-weight: 700; font-size: 13px; color: #24292f;">${f.score}%</span>
+                            <span style="min-width: 60px; text-align: right; font-weight: 700; font-size: var(--font-sm); color: var(--color-text-primary);">${f.score}%</span>
                         </div>
                     </div>
+                    <div style="font-weight: 600; font-size: var(--font-sm); color: ${textColor};">${f.risk_level}</div>
                     <div>
-                        <span class="risk-badge-small ${cl}">${f.risk_level}</span>
+                        <button class="action-icon-btn delete" title="Not the culprit — exclude from analysis" onclick="AnalysisPage.clearFood('${f.food}')">✕</button>
                     </div>
                 </div>
             `;
@@ -198,10 +212,10 @@ const AnalysisPage = {
                                     <span class="timeline-ago">${timeAgo}</span>
                                 </div>
                                 <div class="timeline-info">
-                                    <span style="font-size:13px;color:#24292f;font-weight:600;margin-right:8px;">Foods:</span>
+                                    <span style="font-size:var(--font-sm);color:var(--color-text-primary);font-weight:600;margin-right:8px;">Foods:</span>
                                     ${riskFoods.map(f => `<span class="timeline-food-tag">${f}</span>`).join('')}
-                                    <span style="font-size:13px;color:#57606a;margin:0 12px;">•</span>
-                                    <span style="font-size:12px;color:#57606a;margin-right:6px;">Symptoms:</span>
+                                    <span style="font-size:var(--font-sm);color:var(--color-text-secondary);margin:0 12px;">•</span>
+                                    <span style="font-size:var(--font-sm);color:var(--color-text-secondary);margin-right:6px;">Symptoms:</span>
                                     ${r.symptoms.map(s => `<span class="tag symptom-tag">${s}</span>`).join('')}
                                 </div>
                             </div>
@@ -228,7 +242,7 @@ const AnalysisPage = {
         
         div.innerHTML = `
             <div class="records-table">
-                <div style="display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 16px; padding: 12px 20px; background: #f6f8fa; border-bottom: 1px solid #d0d7de; font-size: 12px; font-weight: 700; color: #57606a; text-transform: uppercase;">
+                <div style="display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 16px; padding: 12px 20px; background: var(--color-page-bg); border-bottom: 1px solid var(--color-border); font-size: var(--font-3xs); font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">
                     <div>Rank</div>
                     <div>Food</div>
                     <div>Confidence</div>
@@ -244,18 +258,18 @@ const AnalysisPage = {
                         });
                         
                         const cl = f.risk_level.toLowerCase();
-                        const bg = cl === 'high' ? '#D22334,#cf222e' : cl === 'medium' ? '#EFA346,#d4731c' : '#1f883d,#1a7f37';
+                        const bg = cl === 'high' ? '#D22334,var(--color-danger)' : cl === 'medium' ? '#EFA346,#d4731c' : 'var(--color-success-dark),var(--color-success)';
                         
                         return `
-                            <div style="display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 16px; padding: 16px 20px; border-bottom: ${i < highConfidence.length - 1 ? '1px solid #eaeef2' : 'none'}; font-size: 13px; transition: all 0.2s;" onmouseover="this.style.background='#f6f8fa'" onmouseout="this.style.background=''">
+                            <div style="display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 16px; padding: 16px 20px; border-bottom: ${i < highConfidence.length - 1 ? '1px solid var(--color-border-subtle)' : 'none'}; font-size: var(--font-sm); transition: all 0.2s;" onmouseover="this.style.background='var(--color-page-bg)'" onmouseout="this.style.background=''">
                                 <div><span class="record-id-badge">#${i + 1}</span></div>
-                                <div style="font-weight: 600; color: #24292f;">${f.food}</div>
+                                <div style="font-weight: 600; color: var(--color-text-primary);">${f.food}</div>
                                 <div>
                                     <div style="display: flex; align-items: center; gap: 12px;">
-                                        <div style="flex: 1; height: 10px; background: #eaeef2; border-radius: 5px; overflow: hidden;">
+                                        <div style="flex: 1; height: 10px; background: var(--color-border-subtle); border-radius: 5px; overflow: hidden;">
                                             <div style="height: 100%; width: ${f.score}%; background: linear-gradient(90deg, ${bg}); border-radius: 5px;"></div>
                                         </div>
-                                        <span style="font-weight: 700; font-size: 13px; min-width: 50px; text-align: right;">${f.score}%</span>
+                                        <span style="font-weight: 700; font-size: var(--font-sm); min-width: 50px; text-align: right;">${f.score}%</span>
                                     </div>
                                 </div>
                                 <div>
@@ -293,21 +307,21 @@ const AnalysisPage = {
         
         // 直接显示通用建议,不调用 AI API
         div.innerHTML = `
-            <div style="background:#fff8c5;border-left:4px solid #9a6700;padding:20px;border-radius:8px;">
-                <div style="font-size:16px;font-weight:700;color:#9a6700;margin-bottom:12px;">
+            <div style="background:var(--color-warning-bg);border-left:4px solid var(--color-warning);padding:20px;border-radius:8px;">
+                <div style="font-size:var(--font-base);font-weight:700;color:var(--color-warning);margin-bottom:12px;">
                     💡 General Allergy Testing Recommendations
                 </div>
-                <div style="color:#24292f;margin-bottom:16px;font-size:13px;">
+                <div style="color:var(--color-text-primary);margin-bottom:16px;font-size:var(--font-sm);">
                     Based on your symptoms: ${[...allSymptoms].join(', ')}
                 </div>
-                <div style="font-weight:600;margin-bottom:10px;color:#24292f;font-size:13px;">Consider these allergy tests:</div>
-                <ul style="margin:0;padding-left:20px;color:#24292f;font-size:13px;">
+                <div style="font-weight:600;margin-bottom:10px;color:var(--color-text-primary);font-size:var(--font-sm);">Consider these allergy tests:</div>
+                <ul style="margin:0;padding-left:20px;color:var(--color-text-primary);font-size:var(--font-sm);">
                     <li style="margin-bottom:8px;">IgE Blood Test (for immediate allergic reactions)</li>
                     <li style="margin-bottom:8px;">Skin Prick Test (identifies specific allergens)</li>
                     <li style="margin-bottom:8px;">Food Elimination Diet (under medical supervision)</li>
                     <li style="margin-bottom:8px;">Oral Food Challenge (performed in clinical setting)</li>
                 </ul>
-                <div style="margin-top:16px;padding:12px;background:#ddf4ff;border-radius:6px;font-size:12px;color:#0969da;">
+                <div style="margin-top:16px;padding:12px;background:var(--color-link-bg);border-radius:6px;font-size:var(--font-3xs);color:var(--color-link);">
                     💡 <strong>Note:</strong> AI-powered personalized recommendations are temporarily unavailable. 
                     Please consult with an allergist for personalized testing advice.
                 </div>
@@ -332,16 +346,16 @@ const AnalysisPage = {
         
         div.innerHTML = `
             <div class="records-table">
-                <div style="display: grid; grid-template-columns: 1fr 200px; gap: 16px; padding: 12px 20px; background: #f6f8fa; border-bottom: 1px solid #d0d7de; font-size: 12px; font-weight: 700; color: #57606a; text-transform: uppercase;">
+                <div style="display: grid; grid-template-columns: 1fr 200px; gap: 16px; padding: 12px 20px; background: var(--color-page-bg); border-bottom: 1px solid var(--color-border); font-size: var(--font-3xs); font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">
                     <div>Allergen Name</div>
                     <div>Status</div>
                 </div>
                 <div class="records-table-body">
                     ${confirmedList.map((allergen, i) => `
-                        <div style="display: grid; grid-template-columns: 1fr 200px; gap: 16px; padding: 16px 20px; border-bottom: ${i < confirmedList.length - 1 ? '1px solid #eaeef2' : 'none'}; font-size: 13px; transition: all 0.2s;" onmouseover="this.style.background='#f6f8fa'" onmouseout="this.style.background=''">
+                        <div style="display: grid; grid-template-columns: 1fr 200px; gap: 16px; padding: 16px 20px; border-bottom: ${i < confirmedList.length - 1 ? '1px solid var(--color-border-subtle)' : 'none'}; font-size: var(--font-sm); transition: all 0.2s;" onmouseover="this.style.background='var(--color-page-bg)'" onmouseout="this.style.background=''">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <span style="font-size: 18px;">⚠️</span>
-                                <span style="font-weight: 600; font-size: 13px; color: #cf222e;">${allergen}</span>
+                                <span style="font-weight: 600; font-size: var(--font-sm); color: var(--color-danger);">${allergen}</span>
                             </div>
                             <div>
                                 <span class="tag symptom-tag">User confirmed</span>
@@ -350,7 +364,7 @@ const AnalysisPage = {
                     `).join('')}
                 </div>
             </div>
-            <div style="margin-top: 16px; padding: 12px; background: #ffebe9; border-left: 4px solid #cf222e; border-radius: 6px; font-size: 12px; color: #cf222e;">
+            <div style="margin-top: 16px; padding: 12px; background: var(--color-danger-bg); border-left: 4px solid var(--color-danger); border-radius: 6px; font-size: var(--font-3xs); color: var(--color-danger);">
                 <strong>⚠️ Critical:</strong> These allergens are confirmed and must be strictly avoided
             </div>
         `;

@@ -8,6 +8,7 @@ const State = {
     filteredRecords: [],
     currentAnalysis: null,
     currentIngredients: [],
+    clearedFoods: [],
     
     // UI状态
     foodsSortOrder: 'desc',

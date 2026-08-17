@@ -14,6 +14,7 @@ class FoodTracker():
         """Initialize FoodTracker with empty data structures"""
         self.records = []  # Initialize empty list to store meal records
         self.known_allergens = set()  # Initialize empty set to store known allergens
+        self.cleared_foods = set()  # Foods the user has manually ruled out from risk analysis
         self.analyzer = AllergenAnalyzer()  # Create an AllergenAnalyzer instance
         self.next_id = 1  # Initialize ID counter starting from 1
         import sys  # Import system module
@@ -324,7 +325,8 @@ Enter 3 to search by food name''')  # Print menu options
             print(" 🤷 No records yet, cannot generate report")  # Print error message
             return  # Exit function
         records_with_symptoms = [r for r in self.records if r.get('symptoms')]  # Filter records that have symptoms
-        confidence_scores = self.analyzer.calculate_confidence(self.records)  # Calculate confidence scores
+        clean_records = self.analyzer.filter_contaminated_records(self.records)  # Strip empty/blank food names, same as the web API does
+        confidence_scores = self.analyzer.calculate_confidence(clean_records)  # Calculate confidence scores
         
         # Check if there's enough data to generate a report
         if not confidence_scores:
@@ -378,11 +380,12 @@ Enter 3 to search by food name''')  # Print menu options
         data = {  # Create dictionary with all data
             "records": self.records,  # Include all meal records
             "known_allergens": list(self.known_allergens),  # Convert set to list for JSON
+            "cleared_foods": list(self.cleared_foods),  # Foods manually ruled out of risk analysis
             "next_id": self.next_id  # Include next ID counter
         }
         data_path = os.path.join(os.path.dirname(__file__), "diet_data.json")
         try:
-            with open("diet_data.json", "w", encoding="utf-8") as f:  # Open file for writing
+            with open(data_path, "w", encoding="utf-8") as f:  # Open file for writing
                 json.dump(data, f, indent=2, ensure_ascii=False)  # Write data as formatted JSON
         except FileNotFoundError as e:  # Catch file not found error
                 print(f"❌ File not found: {e}")  # Print error message
@@ -398,10 +401,11 @@ Enter 3 to search by food name''')  # Print menu options
         """
         data_path = os.path.join(os.path.dirname(__file__), "diet_data.json")
         try:
-            with open("diet_data.json", "r", encoding="utf-8") as f:  # Open file for reading
+            with open(data_path, "r", encoding="utf-8") as f:  # Open file for reading
                 data = json.load(f)  # Parse JSON data
             self.records = data.get("records", [])  # Load records or empty list if not found
             self.known_allergens = set(data.get("known_allergens", []))  # Load allergens as set
+            self.cleared_foods = set(data.get("cleared_foods", []))  # Load cleared foods as set
             self.next_id = data.get("next_id", 1)  # Load next ID or default to 1
 
         except FileNotFoundError:  # Catch if file doesn't exist
@@ -418,10 +422,11 @@ Enter 3 to search by food name''')  # Print menu options
         """
         data_path = os.path.join(os.path.dirname(__file__), "diet_data.json")
         try:
-            with open("diet_data.json", "r", encoding="utf-8") as f:  # Open file for reading
+            with open(data_path, "r", encoding="utf-8") as f:  # Open file for reading
                 data = json.load(f)  # Parse JSON data
             self.records = data.get("records", [])  # Load records or empty list if not found
             self.known_allergens = set(data.get("known_allergens", []))  # Load allergens as set
+            self.cleared_foods = set(data.get("cleared_foods", []))  # Load cleared foods as set
             self.next_id = data.get("next_id", 1)  # Load next ID or default to 1
         except:  # Catch any error silently
             pass  # Do nothing, just continue

@@ -1,17 +1,72 @@
 const HomePage = {
     async load() {
-        const [recs, anal] = await Promise.all([
-            AllerTrackAPI.getRecords(),
-            AllerTrackAPI.getAnalysis()
-        ]);
-        
-        State.currentRecords = recs.records;
-        State.currentAnalysis = anal;
-        
-        this.renderStats(anal);
-        this.renderTopRiskFoods(anal);
-        Heatmap.generate(recs.records, anal);
-        this.renderPredictionPreview();
+        this.renderLoading();
+
+        const slowHintTimer = setTimeout(() => this.showSlowLoadingHint(), 4000);
+
+        try {
+            const [recs, anal] = await Promise.all([
+                AllerTrackAPI.getRecords(),
+                AllerTrackAPI.getAnalysis()
+            ]);
+
+            clearTimeout(slowHintTimer);
+
+            State.currentRecords = recs.records;
+            State.currentAnalysis = anal;
+
+            this.renderStats(anal);
+            this.renderTopRiskFoods(anal);
+            Heatmap.generate(recs.records, anal);
+            this.renderPredictionPreview();
+        } catch (error) {
+            clearTimeout(slowHintTimer);
+            console.error('Failed to load home data:', error);
+            this.renderLoadError();
+        }
+    },
+
+    renderLoading() {
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card skeleton"></div>
+            <div class="stat-card skeleton"></div>
+            <div class="stat-card skeleton"></div>
+        `;
+
+        document.getElementById('topRiskFoods').innerHTML = `
+            <div class="analyzing-loader">
+                <div class="loader-spinner"></div>
+                <div class="loader-text" id="homeLoaderText">Loading your data...</div>
+                <div class="loader-subtext" id="homeLoaderSubtext" style="display: none;"></div>
+            </div>
+        `;
+
+        document.getElementById('heatmapGrid').classList.add('skeleton');
+        document.getElementById('heatmapMonths').classList.add('skeleton');
+    },
+
+    showSlowLoadingHint() {
+        const text = document.getElementById('homeLoaderText');
+        const subtext = document.getElementById('homeLoaderSubtext');
+        if (text) text.textContent = 'Still waking up the server...';
+        if (subtext) {
+            subtext.style.display = 'block';
+            subtext.textContent = 'Our free-tier backend goes to sleep when idle, so the first load after a break can take up to a minute. Thanks for your patience!';
+        }
+    },
+
+    renderLoadError() {
+        document.getElementById('statsGrid').innerHTML = '';
+        document.getElementById('topRiskFoods').innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">⚠️</div>
+                <div class="empty-title">Couldn't reach the server</div>
+                <div class="empty-desc">Please check your connection and try again.</div>
+                <button class="action-btn" style="margin-top: 16px;" onclick="HomePage.load()"><span>🔄</span>Retry</button>
+            </div>
+        `;
+        document.getElementById('heatmapGrid').classList.remove('skeleton');
+        document.getElementById('heatmapMonths').classList.remove('skeleton');
     },
 
     renderStats(analysis) {
@@ -41,9 +96,11 @@ const HomePage = {
     },
 
     renderTopRiskFoods(analysis) {
-        const top = analysis.results?.slice(0, 10) || [];
+        // Known allergens already have their own confirmed home (Known Allergens page) —
+        // this widget is for foods the algorithm suspects, not ones you've already confirmed.
+        const top = (analysis.results || []).filter(f => !f.confirmed).slice(0, 10);
         const container = document.getElementById('topRiskFoods');
-        
+
         if (!top.length) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -54,13 +111,12 @@ const HomePage = {
             `;
             return;
         }
-        
+
         container.innerHTML = top.map((f, i) => `
-            <div class="risk-food-item ${f.risk_level.toLowerCase()}">
+            <div class="risk-food-item ${f.risk_level.toLowerCase()} ${i < 3 ? 'top-rank' : ''}">
                 <div class="risk-rank">${i + 1}</div>
                 <div class="risk-food-name">${f.food}</div>
                 <div class="risk-score">${f.score}%</div>
-                <div class="risk-badge-small ${f.risk_level.toLowerCase()}">${f.risk_level}</div>
             </div>
         `).join('');
     },
@@ -90,8 +146,8 @@ const HomePage = {
             }
             
             container.innerHTML = '<div id="homePredictionGraph" class="prediction-graph-container"></div>';
-            this.renderPredictionGraph(graphData);
-            
+            NetworkGraph.render(document.getElementById('homePredictionGraph'), graphData);
+
         } catch (error) {
             console.error('Failed to load prediction preview:', error);
             container.innerHTML = `
@@ -103,139 +159,10 @@ const HomePage = {
         }
     },
 
-    renderPredictionGraph(data) {
-        const container = document.getElementById('homePredictionGraph');
-        if (!container) return;
-        
-        const width = container.offsetWidth;
-        const height = 350;
-        
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('width', width);
-        svg.setAttribute('height', height);
-        svg.style.background = '#f6f8fa';
-        svg.style.borderRadius = '8px';
-        container.innerHTML = '';
-        container.appendChild(svg);
-        
-        if (!data.nodes || data.nodes.length === 0) return;
-        
-        const nodes = data.nodes.map(n => ({
-            ...n,
-            x: width / 2 + (Math.random() - 0.5) * 200,
-            y: height / 2 + (Math.random() - 0.5) * 200,
-            vx: 0,
-            vy: 0
-        }));
-        
-        const edges = data.edges || [];
-        const edgeElements = [];
-        
-        edges.forEach(edge => {
-            const source = nodes.find(n => n.id === edge.source);
-            const target = nodes.find(n => n.id === edge.target);
-            
-            if (source && target) {
-                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('stroke', '#d0d7de');
-                line.setAttribute('stroke-width', Math.min(edge.weight * 2, 4));
-                line.setAttribute('opacity', 0.6);
-                svg.appendChild(line);
-                edgeElements.push({ line, source, target });
-            }
-        });
-        
-        nodes.forEach(node => {
-            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('r', node.size);
-            circle.setAttribute('fill', node.type === 'confirmed' ? '#cf222e' : node.type === 'high_risk' ? '#fd8c73' : '#8b949e');
-            circle.setAttribute('stroke', '#fff');
-            circle.setAttribute('stroke-width', '3');
-            
-            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            text.setAttribute('text-anchor', 'middle');
-            text.setAttribute('dy', node.size + 18);
-            text.setAttribute('font-size', '12');
-            text.setAttribute('font-weight', '600');
-            text.setAttribute('fill', '#24292f');
-            text.textContent = node.label;
-            
-            g.appendChild(circle);
-            g.appendChild(text);
-            svg.appendChild(g);
-            node.element = g;
-        });
-        
-        let iteration = 0;
-        const maxIterations = 200;
-        
-        const simulate = () => {
-            if (iteration++ > maxIterations) return;
-            
-            for (let i = 0; i < nodes.length; i++) {
-                for (let j = i + 1; j < nodes.length; j++) {
-                    const dx = nodes[j].x - nodes[i].x;
-                    const dy = nodes[j].y - nodes[i].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-                    const force = 800 / (dist * dist);
-                    
-                    nodes[i].vx -= (dx / dist) * force;
-                    nodes[i].vy -= (dy / dist) * force;
-                    nodes[j].vx += (dx / dist) * force;
-                    nodes[j].vy += (dy / dist) * force;
-                }
-            }
-            
-            edgeElements.forEach(edge => {
-                const dx = edge.target.x - edge.source.x;
-                const dy = edge.target.y - edge.source.y;
-                const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-                const force = (dist - 120) * 0.01;
-                
-                edge.source.vx += (dx / dist) * force;
-                edge.source.vy += (dy / dist) * force;
-                edge.target.vx -= (dx / dist) * force;
-                edge.target.vy -= (dy / dist) * force;
-            });
-            
-            const centerX = width / 2;
-            const centerY = height / 2;
-            nodes.forEach(node => {
-                node.vx += (centerX - node.x) * 0.002;
-                node.vy += (centerY - node.y) * 0.002;
-                node.vx *= 0.85;
-                node.vy *= 0.85;
-                node.x += node.vx;
-                node.y += node.vy;
-                
-                const margin = node.size + 40;
-                node.x = Math.max(margin, Math.min(width - margin, node.x));
-                node.y = Math.max(margin, Math.min(height - margin, node.y));
-                
-                node.element.setAttribute('transform', `translate(${node.x}, ${node.y})`);
-            });
-            
-            edgeElements.forEach(edge => {
-                edge.line.setAttribute('x1', edge.source.x);
-                edge.line.setAttribute('y1', edge.source.y);
-                edge.line.setAttribute('x2', edge.target.x);
-                edge.line.setAttribute('y2', edge.target.y);
-            });
-            
-            requestAnimationFrame(simulate);
-        };
-        
-        simulate();
-    }
 };
 
 window.generateReport = () => {
     Utils.showAlert('Generate Report', 'Compile all data into comprehensive analysis?', () => {
-        Navigation.showSubPage('report', false);
-        document.querySelectorAll('.nav-sub-item').forEach((item, index) => {
-            item.classList.toggle('active', index === 1);
-        });
+        Navigation.showSubPage('report');
     });
 };

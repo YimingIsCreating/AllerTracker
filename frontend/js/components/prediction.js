@@ -30,22 +30,34 @@ const PredictionComponent = {
             <div class="section-card">
                 <div class="prediction-loading">
                     <div class="loading-spinner-large"></div>
-                    <div style="font-size: 14px; color: #57606a;">Loading allergen relationship data...</div>
+                    <div style="font-size: var(--font-sm); color: var(--color-text-secondary);">Loading allergen relationship data...</div>
                 </div>
             </div>
         `;
         
         try {
             const graphData = await AllerTrackAPI.getPredictions();
-            
-            const aiPredictions = {
-                known_allergens: {
-                    confirmed: State.currentAnalysis?.known_allergens || [],
-                    high_risk: State.currentAnalysis?.results?.filter(f => f.score > 80).map(f => f.food) || []
-                },
-                predictions: []
+
+            const fallbackKnownAllergens = {
+                confirmed: State.currentAnalysis?.known_allergens || [],
+                high_risk: State.currentAnalysis?.results?.filter(f => f.score > 80).map(f => f.food) || []
             };
-            
+
+            let aiPredictions;
+            try {
+                const crossReactivity = await AllerTrackAPI.getCrossReactivityPredictions();
+                aiPredictions = {
+                    predictions: crossReactivity.predictions || [],
+                    // 后端在"没有过敏原数据"时会把 known_allergens 返回成空数组而不是 {confirmed, high_risk} 对象,这里做兼容
+                    known_allergens: (crossReactivity.known_allergens && !Array.isArray(crossReactivity.known_allergens))
+                        ? crossReactivity.known_allergens
+                        : fallbackKnownAllergens
+                };
+            } catch (error) {
+                console.error('Failed to load cross-reactivity predictions:', error);
+                aiPredictions = { predictions: [], known_allergens: fallbackKnownAllergens };
+            }
+
             State.pageCache.predict.data = { graphData, aiPredictions };
             State.pageCache.predict.timestamp = new Date().toISOString();
             
@@ -133,11 +145,11 @@ const PredictionComponent = {
                 <div class="ai-prediction-section">
                     <div class="section-title" style="margin-bottom: 8px;">
                         <span>🤖 AI Predicted Cross-Reactive Foods</span>
-                        <span style="font-size: 13px; font-weight: 500; color: #57606a;">
+                        <span style="font-size: var(--font-sm); font-weight: 500; color: var(--color-text-secondary);">
                             ${predictions.length} prediction${predictions.length > 1 ? 's' : ''}
                         </span>
                     </div>
-                    <div style="font-size: 13px; color: #57606a; margin-bottom: 16px;">
+                    <div style="font-size: var(--font-sm); color: var(--color-text-secondary); margin-bottom: 16px;">
                         Foods you've never eaten that might trigger allergic reactions
                     </div>
                     
@@ -155,7 +167,30 @@ const PredictionComponent = {
             
 
     `;
-    
 
+
+    },
+
+    renderCard(pred) {
+        const severity = pred.severity || 'low';
+        return `
+            <div class="prediction-card ${severity}-severity">
+                <div class="prediction-header">
+                    <div class="prediction-food-name">
+                        <span class="prediction-icon">🍽️</span>
+                        ${pred.food}
+                    </div>
+                    <div class="prediction-confidence">
+                        <div class="confidence-score">${pred.confidence}%</div>
+                        <div class="confidence-label">Confidence</div>
+                    </div>
+                </div>
+                <div class="prediction-reason">${pred.reason || ''}</div>
+                <div class="prediction-meta">
+                    ${pred.category ? `<span class="prediction-badge category-badge">${pred.category.replace(/_/g, ' ')}</span>` : ''}
+                    <span class="prediction-badge severity-badge ${severity}">${severity} severity</span>
+                </div>
+            </div>
+        `;
     }
 };

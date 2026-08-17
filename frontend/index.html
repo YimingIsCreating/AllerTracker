@@ -7,8 +7,14 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <div class="global-loading-overlay" id="globalLoadingOverlay">
+        <div class="global-loading-spinner"></div>
+        <div class="global-loading-text">Loading AllerTracker...</div>
+        <div class="global-loading-subtext" id="globalLoadingSubtext"></div>
+    </div>
+
     <div class="heatmap-tooltip" id="heatmapTooltip"></div>
-    
+
     <!-- Alert Modal -->
     <div class="modal-overlay" id="alertModal">
         <div class="modal">
@@ -49,7 +55,7 @@
             </div>
             <div class="modal-footer">
                 <button class="modal-btn secondary" onclick="closeAddMealModal()">Cancel</button>
-                <button class="modal-btn primary" onclick="submitMeal()">Add Meal</button>
+                <button class="modal-btn primary" id="submitMealBtn" onclick="submitMeal()">Add Meal</button>
             </div>
         </div>
     </div>
@@ -70,7 +76,7 @@
             </div>
             <div class="modal-footer">
                 <button class="modal-btn secondary" onclick="closeAddSymptomsModal()">Cancel</button>
-                <button class="modal-btn primary" onclick="submitSymptoms()">Add Symptoms</button>
+                <button class="modal-btn primary" id="submitSymptomsBtn" onclick="submitSymptoms()">Add Symptoms</button>
             </div>
         </div>
     </div>
@@ -86,15 +92,15 @@
                 </div>
             </div>
             <div class="nav-container">
-                <div class="nav-item active" onclick="showPage('home')"><span>🏠</span>Home</div>
-                <div class="nav-item" id="recordsParent" onclick="showPage('records')"><span>📋</span>Records</div>
-                <div class="nav-sub-item" onclick="showRecordsSubPage('mealRecords')">Meal Records</div>
-                <div class="nav-sub-item" onclick="showRecordsSubPage('knownAllergens')">Known Allergens</div>
-                <div class="nav-item" id="analysisParent" onclick="showPage('analysis')"><span>📊</span>Analysis</div>
-                <div class="nav-sub-item" onclick="showSubPage('foodConfidence')">Food Confidence</div>
-                <div class="nav-sub-item" onclick="showSubPage('report')">Report</div>
-                <div class="nav-sub-item" onclick="showSubPage('aiAssistant')">AI Assistant</div>
-                <div class="nav-sub-item" onclick="showSubPage('predict')">Predict</div>
+                <div class="nav-item active" data-page="home" onclick="showPage('home')"><span>🏠</span>Home</div>
+                <div class="nav-item" id="recordsParent" data-page="records" onclick="showPage('records')"><span>📋</span>Records</div>
+                <div class="nav-sub-item" data-subpage="mealRecords" onclick="showRecordsSubPage('mealRecords')">Meal Records</div>
+                <div class="nav-sub-item" data-subpage="knownAllergens" onclick="showRecordsSubPage('knownAllergens')">Known Allergens</div>
+                <div class="nav-item" id="analysisParent" data-page="analysis" onclick="showPage('analysis')"><span>📊</span>Analysis</div>
+                <div class="nav-sub-item" data-subpage="foodConfidence" onclick="showSubPage('foodConfidence')">Food Confidence</div>
+                <div class="nav-sub-item" data-subpage="report" onclick="showSubPage('report')">Report</div>
+                <div class="nav-sub-item" data-subpage="aiAssistant" onclick="showSubPage('aiAssistant')">AI Assistant</div>
+                <div class="nav-sub-item" data-subpage="predict" onclick="showSubPage('predict')">Predict</div>
             </div>
         </div>
 
@@ -114,14 +120,17 @@
                     <div class="section-card">
                         <div class="section-title">Activity Heatmap</div>
                         <div class="color-legend">
-                            <span style="margin-right: 8px; font-weight: 600;">Less</span>
                             <div class="legend-box" style="background: #ebedf0;"></div>
-                            <div class="legend-box" style="background: #438D76;"></div>
-                            <div class="legend-box" style="background: #629959;"></div>
-                            <div class="legend-box" style="background: #B3C764;"></div>
-                            <div class="legend-box" style="background: #EAE7A4;"></div>
-                            <div class="legend-box" style="background: #FBDC81;"></div>
-                            <div class="legend-box" style="background: #EFA346;"></div>
+                            <span style="margin-right: 12px;">No data</span>
+                            <div class="legend-box" style="background: #2ea043;"></div>
+                            <span style="margin-right: 16px;">Safe day</span>
+                            <span style="margin-right: 8px; font-weight: 600;">Allergen confidence: Less</span>
+                            <div class="legend-box" style="background: #ffdc4f;"></div>
+                            <div class="legend-box" style="background: #ffc02a;"></div>
+                            <div class="legend-box" style="background: #fba408;"></div>
+                            <div class="legend-box" style="background: #f48804;"></div>
+                            <div class="legend-box" style="background: #ee6800;"></div>
+                            <div class="legend-box" style="background: #e93c00;"></div>
                             <div class="legend-box" style="background: #D22334;"></div>
                             <span style="margin-left: 4px; font-weight: 600;">More</span>
                         </div>
@@ -151,7 +160,7 @@
                     <div class="section-card">
                         <div class="section-title">
                             <span>🔮 Allergen Relationship Network</span>
-                            <a class="link-btn" onclick="Navigation.showSubPage('predict', false)">Full Analysis</a>
+                            <a class="link-btn" onclick="Navigation.showSubPage('predict')">Full Analysis</a>
                         </div>
                         <div id="homePredictionPreview"></div>
                     </div>
@@ -160,7 +169,7 @@
 
             <!-- Records Page -->
             <div id="recordsPage" style="display: none;">
-                <div class="content-body" style="padding-top: 40px;">
+                <div class="content-body no-header">
                     
                     <!-- Meal Records Sub-page -->
                     <div id="mealRecordsContent" style="display: none;">
@@ -207,21 +216,34 @@
                             </div> -->
                         <!-- </div> -->
                         <div class="records-table">
-                            <div class="records-table-header">
+                            <div class="allergen-table-header">
                                 <div>Allergen Name</div>
                                 <div>Status</div>
                                 <div>Actions</div>
                             </div>
                             <div class="records-table-body" id="knownAllergensTableBody"></div>
                         </div>
+
+                        <div class="section-title" style="margin-top: 32px; margin-bottom: 4px;">Excluded Foods</div>
+                        <div style="font-size: var(--font-xs); color: var(--color-text-secondary); margin-bottom: 12px;">
+                            Foods you've manually ruled out — they're skipped in all risk analysis until restored
+                        </div>
+                        <div class="records-table">
+                            <div class="allergen-table-header">
+                                <div>Food Name</div>
+                                <div>Status</div>
+                                <div>Actions</div>
+                            </div>
+                            <div class="records-table-body" id="clearedFoodsTableBody"></div>
+                        </div>
                     </div>
-                    
+
                 </div>
             </div>
 
             <!-- Analysis Page -->
             <div id="analysisPage" style="display: none;">
-                <div class="content-body" style="padding-top: 40px;">
+                <div class="content-body no-header">
                     
                     <!-- Food Confidence Sub-page -->
                     <div id="foodConfidenceContent" style="display: none;">
@@ -238,6 +260,7 @@
                                 <div>Food</div>
                                 <div>Confidence Score</div>
                                 <div>Risk Level</div>
+                                <div>Actions</div>
                             </div>
                             <div id="foodsTableBody"></div>
                         </div>
@@ -296,6 +319,7 @@
     <script src="js/components/heatmap.js"></script>
     <script src="js/components/chat.js"></script>
     <script src="js/components/prediction.js"></script>
+    <script src="js/components/network-graph.js"></script>
     <script src="js/pages/home.js"></script>
     <script src="js/pages/records.js"></script>
     <script src="js/pages/analysis.js"></script>
