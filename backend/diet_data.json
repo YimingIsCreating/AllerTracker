@@ -7138,26 +7138,906 @@
     }
   ],
   "known_allergens": [
-    "celery",
-    "mustard",
+    "soy",
     "shrimp",
-    "milk",
-    "tomatoes",
-    "tree nuts",
     "fish",
     "wheat",
-    "kiwi",
-    "peanuts",
     "strawberries",
-    "chocolate",
+    "kiwi",
+    "milk",
+    "tomatoes",
     "sesame",
+    "chocolate",
+    "tree nuts",
+    "celery",
     "eggs",
-    "soy"
+    "mustard",
+    "peanuts"
   ],
   "cleared_foods": [
     "fried rice",
     "trail mix",
     "garlic"
   ],
+  "inferred_risks_cache": {
+    "burger+celery+chocolate+eggs+fish+french onion soup+kiwi+milk+mustard+onions+peanuts+raisins+sesame+shrimp+soy+strawberries+tomatoes+tree nuts+wheat": {
+      "results": [
+        {
+          "allergen": "passion fruit",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "chestnut",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "tomato",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "banana",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "avocado",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "latex",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "papaya",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "bell pepper",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "carrot",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "almond",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "apple",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "pear",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "cherry",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "apricot",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "birch pollen",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "hazelnut",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "peach",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "plum",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "garlic",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "black pepper",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "coriander",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "sunflower seed",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "mugwort",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "fennel",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "cumin",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "lobster",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "mussel",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "dust mite",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "oyster",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "squid",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "scallop",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "clam",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "crayfish",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "crab",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "cashew",
+          "risk_level": "low",
+          "based_on_group": "Tree Nut Cross-Reactivity",
+          "matched_triggers": [
+            "tree nuts"
+          ]
+        },
+        {
+          "allergen": "macadamia",
+          "risk_level": "low",
+          "based_on_group": "Tree Nut Cross-Reactivity",
+          "matched_triggers": [
+            "tree nuts"
+          ]
+        },
+        {
+          "allergen": "pistachio",
+          "risk_level": "low",
+          "based_on_group": "Tree Nut Cross-Reactivity",
+          "matched_triggers": [
+            "tree nuts"
+          ]
+        },
+        {
+          "allergen": "walnut",
+          "risk_level": "low",
+          "based_on_group": "Tree Nut Cross-Reactivity",
+          "matched_triggers": [
+            "tree nuts"
+          ]
+        },
+        {
+          "allergen": "brazil nut",
+          "risk_level": "low",
+          "based_on_group": "Tree Nut Cross-Reactivity",
+          "matched_triggers": [
+            "tree nuts"
+          ]
+        },
+        {
+          "allergen": "pecan",
+          "risk_level": "low",
+          "based_on_group": "Tree Nut Cross-Reactivity",
+          "matched_triggers": [
+            "tree nuts"
+          ]
+        },
+        {
+          "allergen": "peanut",
+          "risk_level": "high",
+          "based_on_group": "Legume Cross-Reactivity",
+          "matched_triggers": [
+            "peanuts",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "lentil",
+          "risk_level": "high",
+          "based_on_group": "Legume Cross-Reactivity",
+          "matched_triggers": [
+            "peanuts",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "lupin",
+          "risk_level": "high",
+          "based_on_group": "Legume Cross-Reactivity",
+          "matched_triggers": [
+            "peanuts",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "pea",
+          "risk_level": "high",
+          "based_on_group": "Legume Cross-Reactivity",
+          "matched_triggers": [
+            "peanuts",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "chickpea",
+          "risk_level": "high",
+          "based_on_group": "Legume Cross-Reactivity",
+          "matched_triggers": [
+            "peanuts",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "tuna",
+          "risk_level": "low",
+          "based_on_group": "Fish Cross-Reactivity",
+          "matched_triggers": [
+            "fish"
+          ]
+        },
+        {
+          "allergen": "sardine",
+          "risk_level": "low",
+          "based_on_group": "Fish Cross-Reactivity",
+          "matched_triggers": [
+            "fish"
+          ]
+        },
+        {
+          "allergen": "anchovy",
+          "risk_level": "low",
+          "based_on_group": "Fish Cross-Reactivity",
+          "matched_triggers": [
+            "fish"
+          ]
+        },
+        {
+          "allergen": "cod",
+          "risk_level": "low",
+          "based_on_group": "Fish Cross-Reactivity",
+          "matched_triggers": [
+            "fish"
+          ]
+        },
+        {
+          "allergen": "halibut",
+          "risk_level": "low",
+          "based_on_group": "Fish Cross-Reactivity",
+          "matched_triggers": [
+            "fish"
+          ]
+        },
+        {
+          "allergen": "salmon",
+          "risk_level": "low",
+          "based_on_group": "Fish Cross-Reactivity",
+          "matched_triggers": [
+            "fish"
+          ]
+        }
+      ],
+      "source": "local_db",
+      "created_at": "2026-08-17T10:26:36.412613+00:00"
+    },
+    "celery+chocolate+eggs+fish+kiwi+milk+mustard+peanuts+sesame+shrimp+soy+strawberries+tomatoes+tree nuts+wheat": {
+      "results": [
+        {
+          "allergen": "papaya",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "avocado",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "latex",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "tomato",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "banana",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "bell pepper",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "passion fruit",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "chestnut",
+          "risk_level": "low",
+          "based_on_group": "Latex-Fruit Syndrome",
+          "matched_triggers": [
+            "kiwi"
+          ]
+        },
+        {
+          "allergen": "plum",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "pear",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "cherry",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "apple",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "apricot",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "birch pollen",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "peach",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "hazelnut",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "carrot",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "almond",
+          "risk_level": "high",
+          "based_on_group": "Birch Pollen-Food Syndrome (Oral Allergy Syndrome)",
+          "matched_triggers": [
+            "celery",
+            "kiwi",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "fennel",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "mugwort",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "cumin",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "black pepper",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "coriander",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "garlic",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "sunflower seed",
+          "risk_level": "low",
+          "based_on_group": "Mugwort-Spice Syndrome",
+          "matched_triggers": [
+            "celery"
+          ]
+        },
+        {
+          "allergen": "crayfish",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "dust mite",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "oyster",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "crab",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "lobster",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "squid",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "mussel",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "clam",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "scallop",
+          "risk_level": "low",
+          "based_on_group": "Shellfish-Mollusk Cross-Reactivity",
+          "matched_triggers": [
+            "shrimp"
+          ]
+        },
+        {
+          "allergen": "pecan",
+          "risk_level": "low",
+          "based_on_group": "Tree Nut Cross-Reactivity",
+          "matched_triggers": [
+            "tree nuts"
+          ]
+        },
+        {
+          "allergen": "brazil nut",
+          "risk_level": "low",
+          "based_on_group": "Tree Nut Cross-Reactivity",
+          "matched_triggers": [
+            "tree nuts"
+          ]
+        },
+        {
+          "allergen": "walnut",
+          "risk_level": "low",
+          "based_on_group": "Tree Nut Cross-Reactivity",
+          "matched_triggers": [
+            "tree nuts"
+          ]
+        },
+        {
+          "allergen": "pistachio",
+          "risk_level": "low",
+          "based_on_group": "Tree Nut Cross-Reactivity",
+          "matched_triggers": [
+            "tree nuts"
+          ]
+        },
+        {
+          "allergen": "cashew",
+          "risk_level": "low",
+          "based_on_group": "Tree Nut Cross-Reactivity",
+          "matched_triggers": [
+            "tree nuts"
+          ]
+        },
+        {
+          "allergen": "macadamia",
+          "risk_level": "low",
+          "based_on_group": "Tree Nut Cross-Reactivity",
+          "matched_triggers": [
+            "tree nuts"
+          ]
+        },
+        {
+          "allergen": "peanut",
+          "risk_level": "high",
+          "based_on_group": "Legume Cross-Reactivity",
+          "matched_triggers": [
+            "peanuts",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "pea",
+          "risk_level": "high",
+          "based_on_group": "Legume Cross-Reactivity",
+          "matched_triggers": [
+            "peanuts",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "chickpea",
+          "risk_level": "high",
+          "based_on_group": "Legume Cross-Reactivity",
+          "matched_triggers": [
+            "peanuts",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "lentil",
+          "risk_level": "high",
+          "based_on_group": "Legume Cross-Reactivity",
+          "matched_triggers": [
+            "peanuts",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "lupin",
+          "risk_level": "high",
+          "based_on_group": "Legume Cross-Reactivity",
+          "matched_triggers": [
+            "peanuts",
+            "soy"
+          ]
+        },
+        {
+          "allergen": "anchovy",
+          "risk_level": "low",
+          "based_on_group": "Fish Cross-Reactivity",
+          "matched_triggers": [
+            "fish"
+          ]
+        },
+        {
+          "allergen": "tuna",
+          "risk_level": "low",
+          "based_on_group": "Fish Cross-Reactivity",
+          "matched_triggers": [
+            "fish"
+          ]
+        },
+        {
+          "allergen": "sardine",
+          "risk_level": "low",
+          "based_on_group": "Fish Cross-Reactivity",
+          "matched_triggers": [
+            "fish"
+          ]
+        },
+        {
+          "allergen": "salmon",
+          "risk_level": "low",
+          "based_on_group": "Fish Cross-Reactivity",
+          "matched_triggers": [
+            "fish"
+          ]
+        },
+        {
+          "allergen": "cod",
+          "risk_level": "low",
+          "based_on_group": "Fish Cross-Reactivity",
+          "matched_triggers": [
+            "fish"
+          ]
+        },
+        {
+          "allergen": "halibut",
+          "risk_level": "low",
+          "based_on_group": "Fish Cross-Reactivity",
+          "matched_triggers": [
+            "fish"
+          ]
+        }
+      ],
+      "source": "local_db",
+      "created_at": "2026-08-17T10:36:58.872457+00:00"
+    }
+  },
   "next_id": 648
 }

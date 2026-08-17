@@ -15,6 +15,7 @@ class FoodTracker():
         self.records = []  # Initialize empty list to store meal records
         self.known_allergens = set()  # Initialize empty set to store known allergens
         self.cleared_foods = set()  # Foods the user has manually ruled out from risk analysis
+        self.inferred_risks_cache = {}  # cross-reactivity results keyed by sorted allergen combo, so repeat lookups skip the AI call
         self.analyzer = AllergenAnalyzer()  # Create an AllergenAnalyzer instance
         self.next_id = 1  # Initialize ID counter starting from 1
         import sys  # Import system module
@@ -381,6 +382,7 @@ Enter 3 to search by food name''')  # Print menu options
             "records": self.records,  # Include all meal records
             "known_allergens": list(self.known_allergens),  # Convert set to list for JSON
             "cleared_foods": list(self.cleared_foods),  # Foods manually ruled out of risk analysis
+            "inferred_risks_cache": self.inferred_risks_cache,  # Cached cross-reactivity results by allergen combo
             "next_id": self.next_id  # Include next ID counter
         }
         data_path = os.path.join(os.path.dirname(__file__), "diet_data.json")
@@ -406,6 +408,7 @@ Enter 3 to search by food name''')  # Print menu options
             self.records = data.get("records", [])  # Load records or empty list if not found
             self.known_allergens = set(data.get("known_allergens", []))  # Load allergens as set
             self.cleared_foods = set(data.get("cleared_foods", []))  # Load cleared foods as set
+            self.inferred_risks_cache = data.get("inferred_risks_cache", {})  # Load cross-reactivity cache
             self.next_id = data.get("next_id", 1)  # Load next ID or default to 1
 
         except FileNotFoundError:  # Catch if file doesn't exist
@@ -427,6 +430,7 @@ Enter 3 to search by food name''')  # Print menu options
             self.records = data.get("records", [])  # Load records or empty list if not found
             self.known_allergens = set(data.get("known_allergens", []))  # Load allergens as set
             self.cleared_foods = set(data.get("cleared_foods", []))  # Load cleared foods as set
+            self.inferred_risks_cache = data.get("inferred_risks_cache", {})  # Load cross-reactivity cache
             self.next_id = data.get("next_id", 1)  # Load next ID or default to 1
         except:  # Catch any error silently
             pass  # Do nothing, just continue

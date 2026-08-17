@@ -3,13 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from food_tracker import FoodTracker
 from allergenanalyzer import AllergenAnalyzer
+from cross_reactivity import infer_local_cross_reactive_risks, get_uncovered_allergens
 import google.genai as genai
 import os
 from dotenv import load_dotenv
 import json
 import re
 import threading
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 # 用于存储聊天历史（生产环境应该用数据库）
@@ -86,6 +87,79 @@ def call_gemini_json(prompt, model='gemini-2.5-flash'):
     if json_match:
         return json.loads(json_match.group())
     return json.loads(response_text)
+
+
+def infer_via_ai(user_allergens):
+    """本地规则库(cross_reactivity.py)没覆盖到的过敏原,调用 Gemini 做结构化推断。
+    限定在已有医学文献记载的交叉反应综合征范围内,不允许模型编造;
+    解析失败或 AI 未配置时返回空列表,不让脏数据污染缓存。"""
+    if not ai_model:
+        print("⚠️ Cross-reactivity AI fallback skipped: AI service not configured")
+        return []
+
+    prompt = f"""You are given a list of confirmed food/substance allergens: {user_allergens}.
+
+Based on well-established medical cross-reactivity syndromes (such as Latex-Fruit Syndrome, Birch Pollen-Food Syndrome / Oral Allergy Syndrome, Shellfish-Mollusk cross-reactivity, Ragweed-Melon Syndrome, Grass Pollen-Food Syndrome, Mugwort-Spice Syndrome, etc.), identify other allergens that could be cross-reactive with the ones listed.
+
+Only include associations that are documented in established allergy/immunology literature. Do not speculate beyond known syndromes.
+
+Return ONLY a JSON object, no other text, in this exact format:
+{{
+    "results": [
+        {{
+            "allergen": "string",
+            "risk_level": "high" or "low",
+            "based_on_group": "string (syndrome name)",
+            "matched_triggers": ["string"]
+        }}
+    ]
+}}
+
+risk_level should be "high" if 2 or more of the user's allergens belong to the same syndrome group, otherwise "low".
+
+If no known cross-reactivity exists, return {{"results": []}}.
+"""
+
+    try:
+        result = call_gemini_json(prompt)
+        return result.get("results", [])
+    except Exception as e:
+        print(f"⚠️ Cross-reactivity AI fallback returned unparseable response: {e}")
+        return []
+
+
+def get_cross_reactive_risks(user_allergens):
+    """交叉反应推断的主调度:先查缓存,再查本地规则库(cross_reactivity.py),
+    本地库完全没命中且有未覆盖到的过敏原时才兜底调用 AI,结果按过敏原组合缓存,
+    避免同样的输入重复打 AI API。返回 (results, source)。"""
+    user_set = {a.lower() for a in user_allergens}
+    if not user_set:
+        return [], "local_db"
+
+    cache_key = "+".join(sorted(user_set))
+    cached = tracker.inferred_risks_cache.get(cache_key)
+    if cached:
+        return cached["results"], cached["source"]
+
+    local_results = infer_local_cross_reactive_risks(user_set)
+    uncovered = get_uncovered_allergens(user_set)
+
+    if not local_results and uncovered:
+        final_results = infer_via_ai(sorted(user_set))
+        source = "ai_api"
+    else:
+        final_results = local_results
+        source = "local_db"
+
+    with data_lock:
+        tracker.inferred_risks_cache[cache_key] = {
+            "results": final_results,
+            "source": source,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        tracker.save_data()
+
+    return final_results, source
 
 
 # 数据模型
@@ -340,79 +414,56 @@ Respond in JSON format:
 #1.21
 @app.post("/api/predict-cross-reactivity")
 async def predict_cross_reactivity():
-    """使用 AI 预测交叉过敏反应"""
-    if not ai_model:
-        raise HTTPException(status_code=503, detail="AI service not available")
-    
+    """预测交叉过敏反应:本地规则库(cross_reactivity.py)优先判断,
+    库内未覆盖到的过敏原才兜底调用 AI,结果按过敏原组合缓存复用。"""
     try:
         # 获取用户的已确认过敏原和高风险食物
         confidence_scores = get_confidence_scores()
-        
+
         confirmed_allergens = list(tracker.known_allergens)
-        high_risk_foods = [food for food, score in confidence_scores.items() 
+        high_risk_foods = [food for food, score in confidence_scores.items()
                           if score > 0.8 and food not in confirmed_allergens]
-        
+
         all_known_allergens = confirmed_allergens + high_risk_foods
-        
+
         if not all_known_allergens:
             return {
                 "predictions": [],
                 "known_allergens": [],
                 "explanation": "No allergen data available for prediction"
             }
-        
-        # 构建 AI prompt
-        prompt = f"""You are an expert allergist specializing in food allergies and cross-reactivity.
 
-Based on the following confirmed allergens that the user has:
-{', '.join(all_known_allergens)}
+        raw_results, source = get_cross_reactive_risks(all_known_allergens)
 
-Please predict OTHER foods (that the user has NEVER eaten) that they might be allergic to due to:
-1. Cross-reactivity (similar proteins)
-2. Same botanical family
-3. Similar molecular structures
-4. Known medical associations
+        already_known = {a.lower() for a in all_known_allergens}
+        predictions = []
+        for r in raw_results:
+            allergen = r.get("allergen", "")
+            if not allergen or allergen.lower() in already_known:
+                continue
+            is_high = r.get("risk_level") == "high"
+            matched_triggers = r.get("matched_triggers", [])
+            predictions.append({
+                "food": allergen,
+                "confidence": 85 if is_high else 55,
+                "reason": f"{r.get('based_on_group', 'Known cross-reactivity')}: matches {', '.join(matched_triggers)}",
+                "category": "cross_reactivity",
+                "severity": "high" if is_high else "low"
+            })
 
-IMPORTANT RULES:
-- Only suggest foods NOT in this list: {', '.join(all_known_allergens)}
-- Provide 5-10 predictions maximum
-- Focus on scientifically documented cross-reactions
-- Include both common and less obvious predictions
-
-Respond in JSON format:
-{{
-    "predictions": [
-        {{
-            "food": "avocado",
-            "confidence": 85,
-            "reason": "Latex-fruit syndrome: bananas and avocados share similar proteins (chitinases)",
-            "category": "cross_reactivity",
-            "severity": "moderate"
-        }}
-    ]
-}}
-
-Categories: "cross_reactivity", "botanical_family", "molecular_similarity"
-Severity: "high", "moderate", "low"
-Confidence: 0-100 (how likely based on medical literature)
-"""
-
-        result = call_gemini_json(prompt)
-
-        # 确保返回格式正确
-        if 'predictions' not in result:
-            result = {'predictions': []}
-        
-        # 添加已知过敏原信息
-        result['known_allergens'] = {
-            'confirmed': confirmed_allergens,
-            'high_risk': high_risk_foods
+        result = {
+            "predictions": predictions,
+            "known_allergens": {
+                "confirmed": confirmed_allergens,
+                "high_risk": high_risk_foods
+            },
+            "source": source
         }
-        
-        print(f"✅ AI Prediction: {len(result['predictions'])} foods predicted")
-        
+
+        print(f"✅ Cross-reactivity prediction: {len(predictions)} foods predicted (source={source})")
+
         return result
-        
+
     except Exception as e:
         print(f"❌ Cross-reactivity prediction error: {e}")
         import traceback
@@ -422,101 +473,80 @@ Confidence: 0-100 (how likely based on medical literature)
 
 @app.get("/api/predict")
 def get_prediction_graph():
-    """生成预测图数据(历史数据和ai预测)"""
+    """生成预测图数据:已确认过敏原作为锚点节点,交叉反应推断(本地规则库优先,
+    未覆盖到的过敏原走 AI 兜底)分高/低风险两档作为卫星节点,边表示"推断自哪个已知过敏原"。"""
     try:
-        # 获取分析结果
-        clean_records = analyzer.filter_contaminated_records(tracker.records)
-        confidence_scores = analyzer.calculate_confidence(clean_records)
+        confirmed_allergens = tracker.known_allergens
 
-        if not confidence_scores:
+        if not confirmed_allergens:
             return {
                 "nodes": [],
                 "edges": [],
                 "summary": {
-                    "confirmed": len(tracker.known_allergens),
+                    "confirmed": 0,
                     "high_risk": 0,
-                    "predicted": 0
+                    "low_risk": 0
                 },
                 "has_data": False
             }
-        
-        # 分类食物
-        confirmed_allergens = tracker.known_allergens
-        high_risk_foods = set()
-        
-        for food, score in confidence_scores.items():
-            if food not in confirmed_allergens and score > 0.8:
-                high_risk_foods.add(food)
-        
-        # 构建节点
-        nodes = []
-        
-        # 已确认过敏原（红色大节点）
-        for food in confirmed_allergens:
-            nodes.append({
-                "id": food,
-                "label": food,
-                "type": "confirmed",
-                "score": 100,
-                "size": 40
-            })
-        
-        # 高风险食物（橙色节点）
-        for food in high_risk_foods:
-            score = confidence_scores.get(food, 0) * 100
-            nodes.append({
-                "id": food,
-                "label": food,
-                "type": "high_risk",
-                "score": round(score, 1),
-                "size": 35
-            })
-        
-        # 构建边（食物共现关系）
+
+        raw_results, source = get_cross_reactive_risks(list(confirmed_allergens))
+
+        # 已确认过敏原（红色最大节点，视觉锚点）
+        nodes = [{
+            "id": food,
+            "label": food,
+            "type": "confirmed",
+            "score": 100,
+            "size": 40
+        } for food in confirmed_allergens]
+
+        confirmed_lower = {a.lower() for a in confirmed_allergens}
         edges = []
-        edge_set = set()
-        
-        food_cooccurrence = {}
-        for record in clean_records:
-            foods = record.get("foods", [])
-            has_symptoms = len(record.get("symptoms", [])) > 0
-            
-            if has_symptoms:
-                for i, food1 in enumerate(foods):
-                    if food1 not in food_cooccurrence:
-                        food_cooccurrence[food1] = {}
-                    
-                    for food2 in foods[i+1:]:
-                        if food2 not in food_cooccurrence:
-                            food_cooccurrence[food2] = {}
-                        
-                        food_cooccurrence[food1][food2] = food_cooccurrence[food1].get(food2, 0) + 1
-                        food_cooccurrence[food2][food1] = food_cooccurrence[food2].get(food1, 0) + 1
-        
-        all_foods = list(confirmed_allergens) + list(high_risk_foods)
-        
-        for food1 in all_foods:
-            for food2 in all_foods:
-                if food1 != food2:
-                    weight = food_cooccurrence.get(food1, {}).get(food2, 0)
-                    if weight > 0:
-                        edge_key = tuple(sorted([food1, food2]))
-                        if edge_key not in edge_set:
-                            edges.append({
-                                "source": food1,
-                                "target": food2,
-                                "weight": weight,
-                                "type": "cooccurrence"
-                            })
-                            edge_set.add(edge_key)
-        
+        high_risk_count = 0
+        low_risk_count = 0
+
+        for r in raw_results:
+            allergen = r.get("allergen", "")
+            if not allergen or allergen.lower() in confirmed_lower:
+                continue
+
+            is_high = r.get("risk_level") == "high"
+            matched_triggers = r.get("matched_triggers", [])
+            based_on_group = r.get("based_on_group", "")
+
+            if is_high:
+                high_risk_count += 1
+            else:
+                low_risk_count += 1
+
+            nodes.append({
+                "id": allergen,
+                "label": allergen,
+                "type": "inferred_high" if is_high else "inferred_low",
+                "score": None,
+                "size": 26 if is_high else 16,
+                "based_on_group": based_on_group,
+                "matched_triggers": matched_triggers
+            })
+
+            for trigger in matched_triggers:
+                # matched_triggers 里的大小写不一定跟 confirmed_allergens 完全一致,找回真实的节点 id
+                trigger_id = next((a for a in confirmed_allergens if a.lower() == trigger.lower()), trigger)
+                edges.append({
+                    "source": allergen,
+                    "target": trigger_id,
+                    "type": "inferred_high" if is_high else "inferred_low",
+                    "based_on_group": based_on_group
+                })
+
         return {
             "nodes": nodes,
             "edges": edges,
             "summary": {
                 "confirmed": len(confirmed_allergens),
-                "high_risk": len(high_risk_foods),
-                "predicted": 0  # AI预测的数量将从另一个接口获取
+                "high_risk": high_risk_count,
+                "low_risk": low_risk_count
             },
             "has_data": True
         }

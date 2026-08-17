@@ -139,7 +139,7 @@ const HomePage = {
                     <div class="empty-state">
                         <div class="empty-icon">🔮</div>
                         <div class="empty-title">Not enough data for predictions</div>
-                        <div class="empty-desc">Add more meals with symptoms to see allergen relationships</div>
+                        <div class="empty-desc">Add a confirmed allergen in Known Allergens to see cross-reactivity relationships</div>
                     </div>
                 `;
                 return;

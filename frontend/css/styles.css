@@ -1190,7 +1190,7 @@
 
 .prediction-graph-container {
     width: 100%;
-    min-height: 400px;
+    min-height: 520px;
     background: var(--color-page-bg);
     border-radius: 8px;
     padding: 20px;

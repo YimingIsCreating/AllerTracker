@@ -130,10 +130,7 @@ const RecordsPage = {
         
         tbody.innerHTML = allergens.map(allergen => `
             <div class="allergen-row">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 20px;">⚠️</span>
-                    <span style="font-weight: 600; font-size: var(--font-sm); color: var(--color-danger);">${allergen}</span>
-                </div>
+                <div style="font-size: var(--font-sm);">${allergen}</div>
                 <div style="color:var(--color-text-secondary);">User confirmed</div>
                 <div style="display:flex;gap:4px;">
                     <button class="action-icon-btn delete" onclick="RecordsPage.deleteAllergen('${allergen}')">🗑️</button>

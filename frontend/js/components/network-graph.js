@@ -7,17 +7,35 @@ const NetworkGraph = {
     _token: 0,
     _colors: {
         confirmed: '#cf222e',
-        high_risk: '#fd8c73',
+        inferred_high: '#f0883e',
+        inferred_low: '#d4a72c',
         default: '#8b949e'
+    },
+    _edgeWidths: {
+        inferred_high: 4,
+        inferred_low: 1.5,
+        default: 2
+    },
+    _idealEdgeDist: {
+        inferred_high: 130,
+        inferred_low: 210,
+        default: 160
     },
 
     render(container, data) {
         const token = ++this._token;
 
+        // 节点一多,可视容器本身就装不下——让节点在一个比可视区域更大的"世界空间"里散开,
+        // 初始视图再自动缩放到能装下整个世界空间,而不是把节点硬挤在可视宽度里。
+        const height = 480;
+        const crowdFactor = Math.max(1, Math.min(4, (data.nodes || []).length / 18));
+        const worldWidth = Math.max(container.clientWidth, 700) * crowdFactor;
+        const worldHeight = height * crowdFactor;
+
         const nodes = (data.nodes || []).map(n => ({
             ...n,
-            x: container.clientWidth / 2 + (Math.random() - 0.5) * 40,
-            y: container.clientHeight / 2 + (Math.random() - 0.5) * 40,
+            x: worldWidth / 2 + (Math.random() - 0.5) * worldWidth * 0.6,
+            y: worldHeight / 2 + (Math.random() - 0.5) * worldHeight * 0.6,
             vx: 0,
             vy: 0,
             fx: null,
@@ -30,8 +48,6 @@ const NetworkGraph = {
 
         container.innerHTML = '';
         container.classList.add('ng-container');
-
-        const height = 380;
 
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('width', '100%');
@@ -59,10 +75,18 @@ const NetworkGraph = {
         container.appendChild(this._buildLegend());
 
         // ---- 视图变换状态（缩放/平移）----
-        const view = { scale: 1, tx: 0, ty: 0 };
+        // 初始缩放让整个世界空间（可能比可视区域宽/高）都能装进容器里,
+        // 而不是从 scale=1 开始只看到世界空间中间被硬挤压的那一块。
+        const fitScale = Math.max(0.4, Math.min(1, Math.min(container.clientWidth / worldWidth, height / worldHeight)));
+        const view = {
+            scale: fitScale,
+            tx: container.clientWidth / 2 - (worldWidth / 2) * fitScale,
+            ty: height / 2 - (worldHeight / 2) * fitScale
+        };
         const applyTransform = () => {
             viewport.setAttribute('transform', `translate(${view.tx}, ${view.ty}) scale(${view.scale})`);
         };
+        applyTransform();
 
         const toLocal = (clientX, clientY) => {
             const rect = svg.getBoundingClientRect();
@@ -76,7 +100,7 @@ const NetworkGraph = {
         edges.forEach(edge => {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('stroke', '#8b949e');
-            line.setAttribute('stroke-width', Math.min(1 + edge.weight * 1.4, 6));
+            line.setAttribute('stroke-width', this._edgeWidths[edge.type] || this._edgeWidths.default);
             line.setAttribute('opacity', 0.45);
             line.classList.add('ng-edge');
             line.style.cursor = 'pointer';
@@ -86,7 +110,7 @@ const NetworkGraph = {
             line.addEventListener('mouseenter', () => this._focusEdge(edge, nodes, edges, line));
             line.addEventListener('mousemove', e => this._showTooltip(e, `
                 <div class="tooltip-date">${edge.source.label} ↔ ${edge.target.label}</div>
-                <div style="color:#8b949e;">Eaten together in ${edge.weight} symptomatic meal${edge.weight > 1 ? 's' : ''}</div>
+                <div style="color:#8b949e;">${edge.based_on_group || 'Known cross-reactivity'}</div>
             `));
             line.addEventListener('mouseleave', () => this._clearFocus(nodes, edges));
         });
@@ -135,10 +159,11 @@ const NetworkGraph = {
         });
 
         // ---- 缩放（滚轮）----
+        const minScale = Math.min(0.4, fitScale);
         svg.addEventListener('wheel', e => {
             e.preventDefault();
             const before = toLocal(e.clientX, e.clientY);
-            view.scale = Math.min(2.5, Math.max(0.4, view.scale * (1 - e.deltaY * 0.001)));
+            view.scale = Math.min(2.5, Math.max(minScale, view.scale * (1 - e.deltaY * 0.001)));
             const rect = svg.getBoundingClientRect();
             view.tx = e.clientX - rect.left - before.x * view.scale;
             view.ty = e.clientY - rect.top - before.y * view.scale;
@@ -162,7 +187,9 @@ const NetworkGraph = {
         window.addEventListener('pointerup', () => { panning = false; svg.style.cursor = 'default'; });
         svg.addEventListener('dblclick', e => {
             if (e.target !== svg) return;
-            view.scale = 1; view.tx = 0; view.ty = 0;
+            view.scale = fitScale;
+            view.tx = container.clientWidth / 2 - (worldWidth / 2) * fitScale;
+            view.ty = height / 2 - (worldHeight / 2) * fitScale;
             applyTransform();
         });
 
@@ -183,8 +210,8 @@ const NetworkGraph = {
                     const a = nodes[i], b = nodes[j];
                     const dx = b.x - a.x, dy = b.y - a.y;
                     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-                    const minDist = a.size + b.size + 30;
-                    const force = dist < minDist ? (minDist - dist) * 0.08 : 900 / (dist * dist);
+                    const minDist = a.size + b.size + 70;
+                    const force = dist < minDist ? (minDist - dist) * 0.08 : 3200 / (dist * dist);
                     const fx = (dx / dist) * force, fy = (dy / dist) * force;
                     if (a.fx === null) { a.vx -= fx; a.vy -= fy; }
                     if (b.fx === null) { b.vx += fx; b.vy += fy; }
@@ -192,7 +219,7 @@ const NetworkGraph = {
             }
 
             edges.forEach(edge => {
-                const idealDist = 130 / (1 + edge.weight * 0.25);
+                const idealDist = this._idealEdgeDist[edge.type] || this._idealEdgeDist.default;
                 const dx = edge.target.x - edge.source.x, dy = edge.target.y - edge.source.y;
                 const dist = Math.sqrt(dx * dx + dy * dy) || 1;
                 const force = (dist - idealDist) * 0.02;
@@ -201,19 +228,19 @@ const NetworkGraph = {
                 if (edge.target.fx === null) { edge.target.vx -= fx; edge.target.vy -= fy; }
             });
 
-            const cx = container.clientWidth / 2, cy = height / 2;
+            const cx = worldWidth / 2, cy = worldHeight / 2;
             nodes.forEach(node => {
                 if (node.fx !== null) {
                     node.x = node.fx; node.y = node.fy; node.vx = 0; node.vy = 0;
                 } else {
-                    node.vx += (cx - node.x) * 0.003;
-                    node.vy += (cy - node.y) * 0.003;
+                    node.vx += (cx - node.x) * 0.0015;
+                    node.vy += (cy - node.y) * 0.0015;
                     node.vx *= 0.82; node.vy *= 0.82;
                     node.x += node.vx * alpha;
                     node.y += node.vy * alpha;
                     const margin = node.size + 30;
-                    node.x = Math.max(margin, Math.min(Math.max(container.clientWidth, margin * 2) - margin, node.x));
-                    node.y = Math.max(margin, Math.min(height - margin, node.y));
+                    node.x = Math.max(margin, Math.min(Math.max(worldWidth, margin * 2) - margin, node.x));
+                    node.y = Math.max(margin, Math.min(worldHeight - margin, node.y));
                 }
                 node.el.setAttribute('transform', `translate(${node.x}, ${node.y})`);
             });
@@ -241,10 +268,13 @@ const NetworkGraph = {
             view.scale = Math.min(2.5, view.scale * 1.25); applyTransform();
         };
         toolbar.querySelector('[data-zoom="out"]').onclick = () => {
-            view.scale = Math.max(0.4, view.scale / 1.25); applyTransform();
+            view.scale = Math.max(minScale, view.scale / 1.25); applyTransform();
         };
         toolbar.querySelector('[data-zoom="reset"]').onclick = () => {
-            view.scale = 1; view.tx = 0; view.ty = 0; applyTransform();
+            view.scale = fitScale;
+            view.tx = container.clientWidth / 2 - (worldWidth / 2) * fitScale;
+            view.ty = height / 2 - (worldHeight / 2) * fitScale;
+            applyTransform();
             nodes.forEach(n => { n.fx = null; n.fy = null; n.pinned = false; n.pinRingEl.style.display = 'none'; });
             alpha = 1; wake();
         };
@@ -298,12 +328,23 @@ const NetworkGraph = {
     },
 
     _nodeTooltip(node, edges) {
-        const linked = edges.filter(e => e.source === node || e.target === node).length;
-        const typeLabel = node.type === 'confirmed' ? '⚠️ Confirmed Allergen' : node.type === 'high_risk' ? '🔴 High-Risk Food' : 'Food';
+        if (node.type === 'confirmed') {
+            return `
+                <div class="tooltip-date">${node.label}</div>
+                <div style="color:#8b949e;">⚠️ Confirmed Allergen</div>
+            `;
+        }
+
+        const isHigh = node.type === 'inferred_high';
+        const typeLabel = isHigh ? '🟠 High-Risk Inferred' : '🟡 Low-Risk Inferred';
+        const triggers = node.matched_triggers && node.matched_triggers.length
+            ? node.matched_triggers.join(', ')
+            : '';
         return `
             <div class="tooltip-date">${node.label}</div>
-            <div style="color:#8b949e;">${typeLabel}${node.score ? ` · ${node.score}% confidence` : ''}</div>
-            <div style="color:#8b949e;">Linked to ${linked} food${linked !== 1 ? 's' : ''}</div>
+            <div style="color:#8b949e;">${typeLabel}</div>
+            ${node.based_on_group ? `<div style="color:#8b949e;">Group: ${node.based_on_group}</div>` : ''}
+            ${triggers ? `<div style="color:#8b949e;">Matches: ${triggers}</div>` : ''}
         `;
     },
 
@@ -363,8 +404,9 @@ const NetworkGraph = {
         div.className = 'ng-legend';
         div.innerHTML = `
             <div class="ng-legend-item"><span class="ng-legend-dot" style="background:${this._colors.confirmed}"></span>Confirmed allergen</div>
-            <div class="ng-legend-item"><span class="ng-legend-dot" style="background:${this._colors.high_risk}"></span>High-risk food</div>
-            <div class="ng-legend-item">— Thicker line = eaten together more often</div>
+            <div class="ng-legend-item"><span class="ng-legend-dot" style="background:${this._colors.inferred_high}"></span>High-risk inferred</div>
+            <div class="ng-legend-item"><span class="ng-legend-dot" style="background:${this._colors.inferred_low}"></span>Low-risk inferred</div>
+            <div class="ng-legend-item">— Thicker line = higher-risk cross-reactivity</div>
             <div class="ng-legend-hint">🖱️ Drag nodes · Click to pin · Scroll to zoom · Drag background to pan</div>
         `;
         return div;
